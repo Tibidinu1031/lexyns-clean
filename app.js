@@ -5,9 +5,106 @@ const navigation = document.querySelector("#navigation");
 const header = document.querySelector(".site-header");
 const mobileCall = document.querySelector(".mobile-call");
 const dialog = document.querySelector("#appointment-dialog");
-const ambient = document.querySelector(".ambient");
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+
+// Coalesce pointer moves into one update per frame so fast mice don't flood style recalcs.
+function onPointerFrame(element, handler) {
+  let frame = 0,
+    latest = null;
+  element.addEventListener(
+    "pointermove",
+    (event) => {
+      latest = event;
+      if (!frame)
+        frame = requestAnimationFrame(() => {
+          frame = 0;
+          handler(latest);
+        });
+    },
+    { passive: true },
+  );
+  return () => {
+    cancelAnimationFrame(frame);
+    frame = 0;
+  };
+}
+
+// Loading screen: shows the logo until the page has loaded, then lifts away.
+const loader = document.querySelector("#loader");
+function runIntro() {
+  const root = document.documentElement;
+  const logo = loader.querySelector(".loader-logo");
+  const bar = loader.querySelector(".loader-progress");
+  const started = performance.now();
+  const minimum = reducedMotion.matches ? 500 : 1900;
+  const scrollKeys = [" ", "ArrowDown", "ArrowUp", "PageDown", "PageUp", "Home", "End"];
+  let loaded = 0,
+    finished = false;
+  const setLoad = (value) => {
+    loaded = Math.max(loaded, value);
+    bar.style.setProperty("--load", loaded.toFixed(3));
+  };
+  const creep = setInterval(() => setLoad(Math.min(0.9, loaded + 0.06)), 160);
+  function blockScroll(event) {
+    if (event.type === "keydown" && !scrollKeys.includes(event.key)) return;
+    event.preventDefault();
+    leave();
+  }
+  function leave() {
+    if (finished) return;
+    finished = true;
+    clearInterval(creep);
+    setLoad(1);
+    window.removeEventListener("wheel", blockScroll);
+    window.removeEventListener("touchmove", blockScroll);
+    window.removeEventListener("keydown", blockScroll);
+    loader.classList.add("leave");
+    root.classList.add("intro-done");
+    setTimeout(() => loader.remove(), 1100);
+  }
+  setLoad(0.15);
+  document.fonts.ready.then(() => setLoad(0.55));
+  const whenLoaded = () =>
+    setTimeout(leave, Math.max(250, minimum - (performance.now() - started)));
+  if (document.readyState === "complete") whenLoaded();
+  else window.addEventListener("load", whenLoaded, { once: true });
+  window.addEventListener("wheel", blockScroll, { passive: false });
+  window.addEventListener("touchmove", blockScroll, { passive: false });
+  window.addEventListener("keydown", blockScroll);
+  loader.addEventListener("click", leave);
+  if (reducedMotion.matches) return;
+
+  let lastSpark = 0;
+  function spark(x, y, size = 10 + Math.random() * 14) {
+    const element = document.createElement("span");
+    element.className = "loader-spark";
+    element.innerHTML = '<svg><use href="#i-spark" /></svg>';
+    element.style.setProperty("--s", `${size}px`);
+    element.style.setProperty("--x", `${x}px`);
+    element.style.setProperty("--y", `${y}px`);
+    element.style.setProperty("--dx", `${(Math.random() - 0.5) * 70}px`);
+    element.style.setProperty("--dy", `${-20 - Math.random() * 60}px`);
+    element.addEventListener("animationend", () => element.remove());
+    loader.append(element);
+  }
+  onPointerFrame(loader, (event) => {
+    const box = logo.getBoundingClientRect();
+    const x = (event.clientX - (box.left + box.width / 2)) / innerWidth;
+    const y = (event.clientY - (box.top + box.height / 2)) / innerHeight;
+    logo.style.setProperty("--rx", `${(-y * 16).toFixed(2)}deg`);
+    logo.style.setProperty("--ry", `${(x * 20).toFixed(2)}deg`);
+    if (event.timeStamp - lastSpark > 45) {
+      lastSpark = event.timeStamp;
+      spark(event.clientX, event.clientY);
+    }
+  });
+  loader.addEventListener("pointerdown", (event) => {
+    for (let index = 0; index < 8; index++)
+      spark(event.clientX, event.clientY, 12 + Math.random() * 18);
+  });
+}
+if (loader) runIntro();
 
 function closeMenu() {
   menuButton.setAttribute("aria-expanded", "false");
@@ -144,8 +241,7 @@ const sections = sectionLinks.map((link) =>
 const contact = document.querySelector("#contact");
 const steps = document.querySelector("#steps");
 const stepItems = [...steps.querySelectorAll(".step")];
-function updateSteps() {
-  const box = steps.getBoundingClientRect();
+function updateSteps(box = steps.getBoundingClientRect()) {
   const progress = Math.min(
     1,
     Math.max(0, (innerHeight * 0.8 - box.top) / (innerHeight * 0.2 + box.height)),
@@ -158,31 +254,38 @@ function updateSteps() {
     ),
   );
 }
-let scheduled = false;
+let scheduled = false,
+  currentSection;
+// Read every measurement first, then write, so each scroll frame lays out at most once.
 function updateScroll() {
-  header.classList.toggle("scrolled", scrollY > 50);
+  const y = scrollY;
   const range = document.documentElement.scrollHeight - innerHeight;
-  header.style.setProperty(
-    "--reading-progress",
-    range > 0 ? Math.min(1, scrollY / range) : 0,
-  );
-  ambient.style.setProperty("--shift", `${(-scrollY * 0.12).toFixed(1)}px`);
+  const headerHeight = header.offsetHeight;
   const contactVisible =
     contact.getBoundingClientRect().top < innerHeight * 0.75;
-  mobileCall.classList.toggle(
-    "visible",
-    scrollY > 580 && !contactVisible && !dialog.open,
-  );
   let current = null;
   sections.forEach((section, index) => {
-    if (section.getBoundingClientRect().top <= header.offsetHeight + 150)
+    if (section.getBoundingClientRect().top <= headerHeight + 150)
       current = index;
   });
-  sectionLinks.forEach((link, index) => {
-    if (index === current) link.setAttribute("aria-current", "location");
-    else link.removeAttribute("aria-current");
-  });
-  updateSteps();
+  const stepsBox = steps.getBoundingClientRect();
+  header.classList.toggle("scrolled", y > 50);
+  header.style.setProperty(
+    "--reading-progress",
+    range > 0 ? Math.min(1, y / range).toFixed(4) : 0,
+  );
+  mobileCall.classList.toggle(
+    "visible",
+    y > 580 && !contactVisible && !dialog.open,
+  );
+  if (current !== currentSection) {
+    currentSection = current;
+    sectionLinks.forEach((link, index) => {
+      if (index === current) link.setAttribute("aria-current", "location");
+      else link.removeAttribute("aria-current");
+    });
+  }
+  updateSteps(stepsBox);
   scheduled = false;
 }
 window.addEventListener(
@@ -255,29 +358,30 @@ document.querySelector("#year").textContent = new Date().getFullYear();
 // Pointer effects: magnetic buttons, spotlights, tilting cards and hero parallax.
 if (finePointer.matches && !reducedMotion.matches) {
   document.querySelectorAll("[data-magnetic]").forEach((element) => {
-    element.addEventListener("pointermove", (event) => {
+    const cancel = onPointerFrame(element, (event) => {
       const box = element.getBoundingClientRect();
       const x = event.clientX - box.left;
       const y = event.clientY - box.top;
-      element.style.setProperty("--sx", `${x}px`);
-      element.style.setProperty("--sy", `${y}px`);
-      element.style.setProperty("--mx", `${(x / box.width - 0.5) * 12}px`);
-      element.style.setProperty("--my", `${(y / box.height - 0.5) * 10}px`);
+      element.style.setProperty("--sx", `${x.toFixed(1)}px`);
+      element.style.setProperty("--sy", `${y.toFixed(1)}px`);
+      element.style.setProperty("--mx", `${((x / box.width - 0.5) * 12).toFixed(2)}px`);
+      element.style.setProperty("--my", `${((y / box.height - 0.5) * 10).toFixed(2)}px`);
     });
     element.addEventListener("pointerleave", () => {
+      cancel();
       element.style.setProperty("--mx", "0px");
       element.style.setProperty("--my", "0px");
     });
   });
   document.querySelectorAll("[data-spotlight]").forEach((element) => {
-    element.addEventListener("pointermove", (event) => {
+    onPointerFrame(element, (event) => {
       const box = element.getBoundingClientRect();
-      element.style.setProperty("--spot-x", `${event.clientX - box.left}px`);
-      element.style.setProperty("--spot-y", `${event.clientY - box.top}px`);
+      element.style.setProperty("--spot-x", `${(event.clientX - box.left).toFixed(1)}px`);
+      element.style.setProperty("--spot-y", `${(event.clientY - box.top).toFixed(1)}px`);
     });
   });
   document.querySelectorAll("[data-tilt]").forEach((element) => {
-    element.addEventListener("pointermove", (event) => {
+    const cancel = onPointerFrame(element, (event) => {
       const box = element.getBoundingClientRect();
       const x = (event.clientX - box.left) / box.width - 0.5;
       const y = (event.clientY - box.top) / box.height - 0.5;
@@ -285,12 +389,13 @@ if (finePointer.matches && !reducedMotion.matches) {
       element.style.setProperty("--ry", `${(x * 10).toFixed(2)}deg`);
     });
     element.addEventListener("pointerleave", () => {
+      cancel();
       element.style.setProperty("--rx", "0deg");
       element.style.setProperty("--ry", "0deg");
     });
   });
   const visual = document.querySelector("[data-parallax]");
-  visual.addEventListener("pointermove", (event) => {
+  const cancelParallax = onPointerFrame(visual, (event) => {
     const box = visual.getBoundingClientRect();
     visual.style.setProperty(
       "--px",
@@ -302,6 +407,7 @@ if (finePointer.matches && !reducedMotion.matches) {
     );
   });
   visual.addEventListener("pointerleave", () => {
+    cancelParallax();
     visual.style.setProperty("--px", 0);
     visual.style.setProperty("--py", 0);
   });
@@ -341,7 +447,7 @@ function popBubble(bubble) {
   }, 1400);
 }
 if (!reducedMotion.matches) {
-  const count = innerWidth < 640 ? 7 : 12;
+  const count = innerWidth < 640 ? 5 : 8;
   for (let index = 0; index < count; index++) spawnBubble(true);
   if ("IntersectionObserver" in window)
     new IntersectionObserver(([entry]) =>
@@ -521,9 +627,9 @@ wipeCursor.className = "wipe-cursor";
 wipeCursor.setAttribute("aria-hidden", "true");
 wipeStage.append(wipeCursor);
 if (finePointer.matches) wipeStage.classList.add("has-cursor");
-wipeCanvas.addEventListener("pointermove", (event) => {
+onPointerFrame(wipeCanvas, (event) => {
   const [x, y] = wipePoint(event);
-  wipeCursor.style.transform = `translate(${x}px, ${y}px)`;
+  wipeCursor.style.transform = `translate3d(${x}px, ${y}px, 0)`;
   if (event.pointerType === "mouse" || event.buttons) wipeTo(x, y);
 });
 wipeCanvas.addEventListener("pointerdown", (event) => {

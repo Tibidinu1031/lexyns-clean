@@ -101,7 +101,7 @@ em {
   white-space: nowrap;
 }
 
-/* Ambient background: drifting color fields, a parallax dot grid and fine grain. */
+/* Ambient background: soft color fields, a dot grid and fine grain, painted once. */
 .ambient {
   position: fixed;
   inset: 0;
@@ -115,7 +115,6 @@ em {
   inset: -40px 0;
   background-image: radial-gradient(circle, #0e24201c 1px, transparent 1.6px);
   background-size: 28px 28px;
-  background-position: 0 var(--shift, 0px);
   mask-image: radial-gradient(ellipse 85% 70% at 50% 35%, #000 25%, transparent 80%);
   -webkit-mask-image: radial-gradient(ellipse 85% 70% at 50% 35%, #000 25%, transparent 80%);
 }
@@ -131,8 +130,6 @@ em {
   width: 58vmax;
   height: 58vmax;
   border-radius: 50%;
-  animation: drift 28s ease-in-out infinite alternate;
-  will-change: transform;
 }
 .blob-1 {
   top: -24vmax;
@@ -143,26 +140,11 @@ em {
   top: 28vh;
   right: -22vmax;
   background: radial-gradient(circle, #27c3cf40, transparent 62%);
-  animation-duration: 34s;
-  animation-delay: -9s;
 }
 .blob-3 {
   bottom: -30vmax;
   left: 18vw;
   background: radial-gradient(circle, #b8f58a3d, transparent 62%);
-  animation-duration: 40s;
-  animation-delay: -17s;
-}
-@keyframes drift {
-  0% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  50% {
-    transform: translate3d(7vmax, 4vmax, 0) scale(1.12);
-  }
-  100% {
-    transform: translate3d(-4vmax, 8vmax, 0) scale(0.94);
-  }
 }
 
 .topbar {
@@ -200,6 +182,7 @@ em {
   transform: translate(2px, -2px);
 }
 .live-dot {
+  position: relative;
   display: inline-block;
   width: 8px;
   height: 8px;
@@ -207,15 +190,24 @@ em {
   border-radius: 50%;
   background: var(--mint);
   vertical-align: 1px;
+}
+.live-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--mint);
   animation: live 2s ease-out infinite;
 }
 @keyframes live {
-  0% {
-    box-shadow: 0 0 0 0 #3fdc9aaa;
+  from {
+    opacity: 0.7;
+    transform: scale(1);
   }
   70%,
-  100% {
-    box-shadow: 0 0 0 9px #3fdc9a00;
+  to {
+    opacity: 0;
+    transform: scale(2.8);
   }
 }
 
@@ -228,20 +220,13 @@ em {
   align-items: center;
   justify-content: space-between;
   gap: 32px;
-  min-height: 98px;
-  padding: 1rem 4%;
-  background: #f3f6f1d9;
-  backdrop-filter: blur(16px) saturate(1.4);
-  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  min-height: 86px;
+  padding: 0.8rem 4%;
+  background: #f3f6f1f5;
   border-bottom: 1px solid #d3ddd7aa;
-  transition:
-    min-height 0.25s,
-    padding 0.25s,
-    box-shadow 0.25s;
+  transition: box-shadow 0.25s;
 }
 .site-header.scrolled {
-  min-height: 78px;
-  padding-block: 0.7rem;
   box-shadow: 0 10px 40px -20px #0e242030;
 }
 .brand {
@@ -263,10 +248,21 @@ em {
   color: var(--green-text);
 }
 .brand-mark {
-  width: 46px;
-  height: 46px;
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
   flex: none;
+  border-radius: 15px;
+  background: radial-gradient(circle at 30% 20%, #163a31, #050c0a 70%);
+  box-shadow:
+    0 10px 22px -12px #0a1a17,
+    inset 0 0 0 1px #3fdc9a33;
   transition: transform 0.6s var(--ease-spring);
+}
+.brand-mark img {
+  width: 82%;
+  height: auto;
 }
 .brand:hover .brand-mark {
   transform: rotate(-14deg) scale(1.08);
@@ -404,20 +400,20 @@ em {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: -60%;
+  left: 0;
   z-index: -1;
   width: 40%;
   background: linear-gradient(100deg, transparent, #ffffffc0, transparent);
-  transform: skewX(-20deg);
+  transform: translateX(-140%) skewX(-20deg);
   animation: shine 5s ease-in-out infinite;
 }
 @keyframes shine {
   0%,
   62% {
-    left: -60%;
+    transform: translateX(-140%) skewX(-20deg);
   }
   100% {
-    left: 140%;
+    transform: translateX(290%) skewX(-20deg);
   }
 }
 .button-glow:hover {
@@ -478,23 +474,21 @@ em {
 @keyframes ring {
   0%,
   72%,
+  92%,
   100% {
     rotate: 0deg;
-    box-shadow: 0 0 0 0 #3fdc9a00;
   }
   76% {
     rotate: -16deg;
   }
   80% {
     rotate: 14deg;
-    box-shadow: 0 0 0 6px #3fdc9a33;
   }
   84% {
     rotate: -10deg;
   }
   88% {
     rotate: 6deg;
-    box-shadow: 0 0 0 10px #3fdc9a00;
   }
 }
 .round-link {
@@ -619,7 +613,12 @@ h1 em {
   stroke-linecap: round;
   stroke-dasharray: 320;
   stroke-dashoffset: 320;
-  animation: draw 1.1s 0.5s cubic-bezier(0.6, 0, 0.2, 1) forwards;
+}
+html.intro-done .swoosh path {
+  animation: draw 1.1s 0.6s cubic-bezier(0.6, 0, 0.2, 1) forwards;
+}
+html:not(.js) .swoosh path {
+  stroke-dashoffset: 0;
 }
 @keyframes draw {
   to {
@@ -690,10 +689,8 @@ h1 em {
   padding: 8px 18px 8px 8px;
   border: 1px solid #fff;
   border-radius: 999px;
-  background: #ffffffa6;
+  background: #ffffffd9;
   box-shadow: 0 12px 30px -22px var(--ink);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   transition:
     transform 0.35s var(--ease-out),
     box-shadow 0.35s;
@@ -777,37 +774,49 @@ h1 em {
   background: linear-gradient(transparent, #040b09d9);
   pointer-events: none;
 }
-.scene {
+/* Each scene layer is its own SVG, so parallax only moves GPU layers and never repaints. */
+.scene,
+.scene-layer {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
 }
-.scene .layer {
+.scene-layer {
+  overflow: visible;
+}
+.scene-layer[style] {
   transform: translate3d(calc(var(--px, 0) * var(--d) * 1px), calc(var(--py, 0) * var(--d) * 1px), 0);
-  transition: transform 0.8s var(--ease-out);
+  transition: transform 0.9s var(--ease-out);
+  will-change: transform;
 }
-.moon {
-  transition: filter 0.6s;
-}
-.hero-visual:hover .moon {
-  filter: drop-shadow(0 0 28px #3fdc9a99);
-}
-.twinkle {
-  transform-box: fill-box;
-  transform-origin: center;
+.scene-spark {
+  position: absolute;
+  z-index: 1;
+  color: #e8fff3;
   animation: twinkle 3.2s ease-in-out infinite;
 }
-.t2 {
+.ss1 {
+  top: 15%;
+  left: 49%;
+  width: 26px;
+  height: 26px;
+}
+.ss2 {
+  top: 12%;
+  left: 18%;
+  width: 16px;
+  height: 16px;
   animation-duration: 4s;
-  animation-delay: -1s;
+  animation-delay: -1.3s;
 }
-.t3 {
-  animation-delay: -2.1s;
-}
-.t4 {
-  animation-duration: 2.6s;
-  animation-delay: -0.6s;
+.ss3 {
+  top: 44%;
+  left: 12%;
+  width: 20px;
+  height: 20px;
+  animation-duration: 3.6s;
+  animation-delay: -2.2s;
 }
 @keyframes twinkle {
   0%,
@@ -818,29 +827,6 @@ h1 em {
   50% {
     opacity: 1;
     transform: scale(1) rotate(25deg);
-  }
-}
-.eye {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: blink 7s infinite;
-}
-.e2 {
-  animation-duration: 9s;
-  animation-delay: -2.3s;
-}
-.e3 {
-  animation-duration: 8s;
-  animation-delay: -4.6s;
-}
-@keyframes blink {
-  0%,
-  94%,
-  100% {
-    transform: scaleY(1);
-  }
-  97% {
-    transform: scaleY(0.1);
   }
 }
 .bubbles {
@@ -862,18 +848,16 @@ h1 em {
   background:
     radial-gradient(circle at 32% 28%, #ffffffee 0 5%, #ffffff55 10%, transparent 24%),
     radial-gradient(circle, transparent 54%, #3fdc9a2e 66%, #27c3cf5c 82%, #ffffffaa 96%, transparent 100%);
-  box-shadow:
-    inset -4px -6px 14px #b8f58a2e,
-    0 0 18px #27c3cf22;
+  box-shadow: inset -4px -6px 14px #b8f58a2e;
   animation: rise var(--t) linear forwards;
+  will-change: transform;
 }
 .bubble::before {
   content: "";
   position: absolute;
-  inset: 10%;
+  inset: 12%;
   border-radius: 50%;
-  background: conic-gradient(from 200deg, #ff9ad52e, #9af2ff38, #b8f58a2e, #ffd98a2e, #ff9ad52e);
-  filter: blur(2px);
+  background: conic-gradient(from 200deg, #ff9ad524, #9af2ff2e, #b8f58a24, #ffd98a24, #ff9ad524);
 }
 .bubbles.paused .bubble {
   animation-play-state: paused;
@@ -946,10 +930,8 @@ h1 em {
   z-index: 2;
   border: 1px solid #ffffff2b;
   border-radius: 20px;
-  background: #ffffff12;
+  background: linear-gradient(160deg, #1d4a3fe6, #0b211ce6);
   box-shadow: 0 24px 40px -22px #000c;
-  backdrop-filter: blur(14px) saturate(1.3);
-  -webkit-backdrop-filter: blur(14px) saturate(1.3);
 }
 .checklist {
   top: 84px;
@@ -1021,15 +1003,19 @@ html:not(.js) .checklist i svg {
   z-index: 2;
   display: grid;
   place-items: center;
-  width: 132px;
-  height: 132px;
+  width: 140px;
+  height: 140px;
+  border: 1.5px solid #3fdc9a66;
   border-radius: 50%;
-  background: var(--brand-gradient);
-  color: var(--deep);
+  background: radial-gradient(circle at 35% 25%, #143a31, #040a09 72%);
   box-shadow:
-    0 0 0 7px #3fdc9a22,
-    0 24px 44px -14px #27c3cf88;
+    0 0 0 7px #3fdc9a1a,
+    0 24px 44px -14px #000;
   transition: transform 0.6s var(--ease-spring);
+}
+.spin-badge img {
+  width: 52%;
+  height: auto;
 }
 .spin-badge:hover {
   transform: scale(1.1) rotate(-10deg);
@@ -1044,12 +1030,7 @@ html:not(.js) .checklist i svg {
 .spin-badge text {
   font: 800 9.5px var(--display);
   letter-spacing: 1.6px;
-  fill: var(--deep);
-}
-.spin-badge .icon {
-  width: 30px;
-  height: 30px;
-  animation: twinkle 3s ease-in-out infinite;
+  fill: var(--mint);
 }
 .bubble-hint {
   position: absolute;
@@ -1059,13 +1040,11 @@ html:not(.js) .checklist i svg {
   padding: 6px 14px;
   border: 1px solid #ffffff30;
   border-radius: 999px;
-  background: #ffffff14;
+  background: #10302ae6;
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.04em;
   color: #e8fff3;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
   pointer-events: none;
   animation: float 3s ease-in-out infinite;
   transition: opacity 0.5s;
@@ -1263,10 +1242,8 @@ h2 {
   padding: 30px 30px 28px;
   border: 1px solid #fff;
   border-radius: 26px;
-  background: #ffffffa6;
+  background: #ffffffc9;
   box-shadow: 0 24px 50px -38px var(--ink);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry));
   transition:
     transform 0.45s var(--ease-out),
@@ -1332,13 +1309,14 @@ h2 {
   background: var(--deep);
   color: var(--paper);
 }
+/* Plain painted layers only: composited or masked children inside the rounded clip made scrolling stutter. */
 .services::before,
 footer::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: radial-gradient(640px circle at var(--spot-x, 78%) var(--spot-y, 0%), #3fdc9a24, transparent 62%);
+  background: radial-gradient(640px circle at var(--spot-x, 80%) var(--spot-y, 0%), #3fdc9a24, transparent 62%);
   pointer-events: none;
 }
 .services::after,
@@ -1347,12 +1325,10 @@ footer::after {
   position: absolute;
   inset: 0;
   z-index: -2;
-  background-image:
-    linear-gradient(#ffffff09 1px, transparent 1px),
-    linear-gradient(90deg, #ffffff09 1px, transparent 1px);
-  background-size: 64px 64px;
-  mask-image: radial-gradient(ellipse at 85% 0%, #000, transparent 70%);
-  -webkit-mask-image: radial-gradient(ellipse at 85% 0%, #000, transparent 70%);
+  background:
+    radial-gradient(ellipse at 85% 0%, #0a1a1700, var(--deep) 70%),
+    linear-gradient(#ffffff0a 1px, transparent 1px) 0 0 / 64px 64px,
+    linear-gradient(90deg, #ffffff0a 1px, transparent 1px) 0 0 / 64px 64px;
   pointer-events: none;
 }
 .services em,
@@ -1568,10 +1544,8 @@ footer em,
   padding: 12px 12px 28px;
   border: 1px solid #fff;
   border-radius: 30px;
-  background: #ffffffb3;
+  background: #ffffffd1;
   box-shadow: 0 24px 50px -40px var(--ink);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   transform: perspective(1000px) rotateX(var(--rx)) rotateY(var(--ry));
   transition:
     transform 0.45s var(--ease-out),
@@ -2106,10 +2080,8 @@ html:not(.js) .step-dot {
   padding: 34px 36px 32px;
   border: 1px solid #fff;
   border-radius: 30px;
-  background: #ffffffb3;
+  background: #ffffffd1;
   box-shadow: 0 30px 60px -42px var(--ink);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
 }
 .visit-card .eyebrow .icon {
   color: var(--green-text);
@@ -2199,8 +2171,17 @@ footer {
   align-items: center;
   gap: 24px;
 }
-.footer-top .brand small {
-  color: var(--mint);
+.footer-logo {
+  display: block;
+  width: clamp(150px, 16vw, 210px);
+  transition: transform 0.5s var(--ease-spring);
+}
+.footer-logo:hover {
+  transform: scale(1.05) rotate(-2deg);
+}
+.footer-logo img {
+  width: 100%;
+  height: auto;
 }
 .footer-top p {
   font-family: var(--display);
@@ -2279,6 +2260,191 @@ footer {
   transform: none;
 }
 
+/* Loading screen: the Lexyns logo, a shine sweep, cursor sparkles; it lifts away like a squeegee. */
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 50% 42%, #143b32 0%, #071311 48%, #020504 100%);
+  color: #e8fff3;
+  cursor: pointer;
+  transition:
+    transform 1s cubic-bezier(0.75, 0, 0.2, 1),
+    border-radius 1s cubic-bezier(0.75, 0, 0.2, 1);
+  animation: intro-failsafe 0.6s 7s forwards;
+}
+html:not(.js) .loader {
+  display: none;
+}
+.loader.leave {
+  transform: translateY(-104%);
+  border-radius: 0 0 50% 50% / 0 0 24vh 24vh;
+  pointer-events: none;
+}
+@keyframes intro-failsafe {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+.loader-stage {
+  display: grid;
+  justify-items: center;
+  gap: 28px;
+  transition:
+    transform 0.8s cubic-bezier(0.75, 0, 0.2, 1),
+    opacity 0.5s;
+}
+.loader.leave .loader-stage {
+  transform: translateY(-28vh) scale(0.9);
+  opacity: 0;
+}
+.loader-logo {
+  --rx: 0deg;
+  --ry: 0deg;
+  position: relative;
+  width: min(380px, 74vw);
+  transform: perspective(800px) rotateX(var(--rx)) rotateY(var(--ry));
+  transition: transform 0.5s var(--ease-out);
+}
+.loader-logo::before {
+  content: "";
+  position: absolute;
+  inset: -16% -8%;
+  z-index: -1;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0 55%, #3fdc9a3d 75%, transparent 92%);
+  animation: spin 3.6s linear infinite;
+}
+.loader-logo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  animation: intro-logo-in 1.1s var(--ease-out) both;
+}
+@keyframes intro-logo-in {
+  from {
+    opacity: 0;
+    transform: scale(0.84) translateY(18px);
+  }
+}
+.loader-shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 38%, #ffffffd9 50%, transparent 62%) no-repeat;
+  background-size: 260% 100%;
+  background-position: 130% 0;
+  -webkit-mask: url(assets/logo.png) center / 100% 100% no-repeat;
+  mask: url(assets/logo.png) center / 100% 100% no-repeat;
+  pointer-events: none;
+  animation: intro-shine 1.5s 0.75s ease-in-out both;
+}
+.loader-logo:hover .loader-shine {
+  animation: intro-shine-again 1.2s ease-in-out both;
+}
+@keyframes intro-shine {
+  from {
+    background-position: 130% 0;
+  }
+  to {
+    background-position: -30% 0;
+  }
+}
+@keyframes intro-shine-again {
+  from {
+    background-position: 130% 0;
+  }
+  to {
+    background-position: -30% 0;
+  }
+}
+.loader-progress {
+  width: min(240px, 52vw);
+  height: 3px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: #ffffff1c;
+}
+.loader-progress span {
+  display: block;
+  height: 100%;
+  background: var(--brand-gradient);
+  transform: scaleX(var(--load, 0));
+  transform-origin: left;
+  transition: transform 0.45s var(--ease-out);
+}
+.loader-hint {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #9fc9b8;
+  animation: intro-hint 2s ease-in-out infinite;
+}
+@keyframes intro-hint {
+  50% {
+    opacity: 0.45;
+  }
+}
+.loader-spark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--s);
+  height: var(--s);
+  margin: calc(var(--s) / -2) 0 0 calc(var(--s) / -2);
+  color: var(--mint);
+  pointer-events: none;
+  animation: intro-spark 0.9s ease-out forwards;
+}
+.loader-spark:nth-child(3n) {
+  color: var(--lime);
+}
+.loader-spark:nth-child(3n + 1) {
+  color: var(--aqua);
+}
+.loader-spark svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+@keyframes intro-spark {
+  from {
+    opacity: 1;
+    transform: translate(var(--x), var(--y)) scale(1) rotate(0deg);
+  }
+  to {
+    opacity: 0;
+    transform: translate(calc(var(--x) + var(--dx)), calc(var(--y) + var(--dy))) scale(0.2) rotate(140deg);
+  }
+}
+.hero-copy > *,
+.hero-visual {
+  transition:
+    opacity 0.9s var(--ease-out),
+    transform 0.9s var(--ease-out);
+}
+.hero-copy > :nth-child(2) {
+  transition-delay: 0.08s;
+}
+.hero-copy > :nth-child(3) {
+  transition-delay: 0.16s;
+}
+.hero-copy > :nth-child(4) {
+  transition-delay: 0.24s;
+}
+.hero-copy > :nth-child(5),
+.hero-visual {
+  transition-delay: 0.32s;
+}
+html.js:not(.intro-done) .hero-copy > *,
+html.js:not(.intro-done) .hero-visual {
+  opacity: 0;
+  transform: translateY(26px);
+}
+
 /* Quote dialog */
 body:has(dialog[open]) {
   overflow: hidden;
@@ -2295,8 +2461,7 @@ body:has(dialog[open]) {
   box-shadow: 0 30px 100px #06120f80;
 }
 #appointment-dialog::backdrop {
-  background: #06120fb8;
-  backdrop-filter: blur(8px);
+  background: #06120fd1;
 }
 .dialog-close {
   position: absolute;
@@ -2764,9 +2929,6 @@ body:has(dialog[open]) {
     min-height: 74px;
     padding: 0.8rem 5%;
   }
-  .site-header.scrolled {
-    min-height: 66px;
-  }
   .brand {
     gap: 9px;
     font-size: 25px;
@@ -3038,10 +3200,8 @@ body:has(dialog[open]) {
     padding: 6px;
     padding-bottom: max(6px, env(safe-area-inset-bottom));
     border-radius: 999px;
-    background: #0a1a17f2;
+    background: #0a1a17f7;
     box-shadow: 0 12px 30px #0a1a1766;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     transform: translateY(120px);
     transition: transform 0.3s var(--ease-out);
   }

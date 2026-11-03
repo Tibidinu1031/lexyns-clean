@@ -19,9 +19,10 @@ Cu Node.js instalat, rulează `npm run dev` și deschide http://127.0.0.1:4173. 
 
 ## Design și interacțiuni
 
-- Paletă preluată din logo-ul Lexyns CLEAN: negru-verde profund cu gradient mentă → aqua.
-- Fundal ambiental: pete de culoare care plutesc lent, grilă de puncte cu paralaxă la scroll și textură fină de „hârtie”.
-- Hero: butoane bold cu efect magnetic și reflex de lumină, ilustrație SVG cu acoperișurile Sibiului („ochii” care clipesc), paralaxă la mișcarea mouse-ului, bule de săpun care se sparg la atingere, checklist animat și insignă rotativă.
+- Logo-ul Lexyns CLEAN (`assets/logo.png`, `assets/logo-mark.png`, favicon) apare pe ecranul de încărcare, în header, în insigna din hero și în footer. Paleta e preluată din logo: negru-verde profund cu gradient mentă → aqua.
+- Ecran de încărcare: logo cu reflex de lumină, care se înclină după cursor și lasă scântei; un click, un scroll sau o tastă intră imediat pe site, altfel se ridică singur după încărcare.
+- Fundal ambiental: pete de culoare, grilă de puncte și textură fină de „hârtie”, desenate o singură dată (fără animații costisitoare la scroll).
+- Hero: butoane bold cu efect magnetic și reflex de lumină, ilustrație SVG cu acoperișurile Sibiului pe straturi separate (paralaxă fluidă pe GPU), bule de săpun care se sparg la atingere, checklist animat și insignă rotativă.
 - Benzi marquee încrucișate cu servicii (se opresc la hover).
 - Statistici cu numărătoare animată și carduri care se înclină după cursor.
 - Servicii în acordeon animat, cu spotlight care urmărește cursorul; fiecare „Cere ofertă” preselectează serviciul în fereastra de ofertă.

@@ -20,16 +20,29 @@
     />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="ro_RO" />
-    <link
-      rel="icon"
-      type="image/svg+xml"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='14' fill='%230a1a17'/%3E%3Cpath d='M22 9a15 15 0 1 0 17 20A14 14 0 0 1 22 9z' fill='%233fdc9a'/%3E%3Cpath d='M34 8c.5 3.4 1.8 4.9 5 5.4-3.2.5-4.5 2-5 5.4-.5-3.4-1.8-4.9-5-5.4 3.2-.5 4.5-2 5-5.4z' fill='%23d9ffe9'/%3E%3C/svg%3E"
-    />
+    <link rel="icon" type="image/png" href="assets/favicon.png" />
+    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+    <link rel="preload" as="image" href="assets/logo.png" />
     <link rel="stylesheet" href="fonts.css" />
     <link rel="stylesheet" href="styles.css" />
+    <script>
+      // Show the loading screen only when scripts run; reveal the page anyway if app.js never loads.
+      document.documentElement.classList.add("js");
+      setTimeout(() => document.documentElement.classList.add("intro-done"), 6000);
+    </script>
     <script src="app.js" defer></script>
   </head>
   <body>
+    <div class="loader" id="loader" aria-hidden="true">
+      <div class="loader-stage">
+        <div class="loader-logo">
+          <img src="assets/logo.png" alt="" width="452" height="352" fetchpriority="high" />
+          <span class="loader-shine"></span>
+        </div>
+        <div class="loader-progress"><span></span></div>
+        <p class="loader-hint">Atinge oriunde pentru a intra ✦</p>
+      </div>
+    </div>
     <svg class="sprite" aria-hidden="true" focusable="false">
       <defs>
         <linearGradient id="g-brand" x1="0" y1="0" x2="1" y2="1">
@@ -38,15 +51,6 @@
           <stop offset="1" stop-color="#27c3cf" />
         </linearGradient>
       </defs>
-      <symbol id="logo" viewBox="0 0 48 48">
-        <rect width="48" height="48" rx="14" fill="#0a1a17" />
-        <path d="M22 9a15 15 0 1 0 17 20A14 14 0 0 1 22 9z" fill="url(#g-brand)" />
-        <path
-          d="M34 8c.5 3.4 1.8 4.9 5 5.4-3.2.5-4.5 2-5 5.4-.5-3.4-1.8-4.9-5-5.4 3.2-.5 4.5-2 5-5.4z"
-          fill="#d9ffe9"
-        />
-        <circle cx="29" cy="23" r="1.4" fill="#d9ffe9" />
-      </symbol>
       <symbol id="i-spark" viewBox="0 0 24 24">
         <path
           d="M12 1.5c.7 5.6 2.9 8.6 9 10.5-6.1 1.9-8.3 4.9-9 10.5-.7-5.6-2.9-8.6-9-10.5 6.1-1.9 8.3-4.9 9-10.5z"
@@ -156,7 +160,9 @@
     </div>
     <header class="site-header">
       <a class="brand" href="#" aria-label="Lexyns CLEAN, pagina principală">
-        <svg class="brand-mark" aria-hidden="true"><use href="#logo" /></svg>
+        <span class="brand-mark" aria-hidden="true"
+          ><img src="assets/logo-mark.png" alt="" width="196" height="202"
+        /></span>
         <span>lexyns<small>CLEAN · SIBIU</small></span>
       </a>
       <nav id="navigation" aria-label="Navigare principală">
@@ -245,61 +251,47 @@
           </div>
         </div>
         <div class="hero-visual" data-parallax>
-          <svg
-            class="scene"
-            viewBox="0 0 600 760"
-            preserveAspectRatio="xMidYMax slice"
-            aria-hidden="true"
-          >
-            <defs>
-              <radialGradient id="h-sky" cx="72%" cy="18%" r="95%">
-                <stop offset="0" stop-color="#1c5446" />
-                <stop offset=".42" stop-color="#0d2822" />
-                <stop offset="1" stop-color="#060f0d" />
-              </radialGradient>
-              <radialGradient id="h-halo">
-                <stop offset="0" stop-color="#3fdc9a" stop-opacity=".42" />
-                <stop offset=".5" stop-color="#27c3cf" stop-opacity=".1" />
-                <stop offset="1" stop-color="#27c3cf" stop-opacity="0" />
-              </radialGradient>
-              <linearGradient id="h-back" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stop-color="#173f36" />
-                <stop offset="1" stop-color="#0b201c" />
-              </linearGradient>
-              <linearGradient id="h-front" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stop-color="#1f5143" />
-                <stop offset=".7" stop-color="#0c1f1b" />
-              </linearGradient>
-              <radialGradient id="h-lamp">
-                <stop offset="0" stop-color="#ffd98a" stop-opacity=".55" />
-                <stop offset="1" stop-color="#ffd98a" stop-opacity="0" />
-              </radialGradient>
-              <g id="h-eye">
-                <ellipse cx="0" cy="1" rx="30" ry="14" fill="url(#h-lamp)" />
-                <path d="M-22 6Q0-18 22 6Q0 2-22 6z" fill="#0a1714" stroke="#3fdc9a" stroke-opacity=".3" />
-                <path class="pupil" d="M-12 4.6Q0-6 12 4.6Q0 2.8-12 4.6z" fill="#ffd98a" />
+          <div class="scene" aria-hidden="true">
+            <svg class="scene-layer" viewBox="0 0 600 760" preserveAspectRatio="xMidYMax slice">
+              <defs>
+                <radialGradient id="h-sky" cx="72%" cy="30%" r="95%">
+                  <stop offset="0" stop-color="#1c5446" />
+                  <stop offset=".42" stop-color="#0d2822" />
+                  <stop offset="1" stop-color="#060f0d" />
+                </radialGradient>
+                <radialGradient id="h-halo">
+                  <stop offset="0" stop-color="#3fdc9a" stop-opacity=".42" />
+                  <stop offset=".5" stop-color="#27c3cf" stop-opacity=".1" />
+                  <stop offset="1" stop-color="#27c3cf" stop-opacity="0" />
+                </radialGradient>
+                <linearGradient id="h-back" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#173f36" />
+                  <stop offset="1" stop-color="#0b201c" />
+                </linearGradient>
+                <linearGradient id="h-front" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#1f5143" />
+                  <stop offset=".7" stop-color="#0c1f1b" />
+                </linearGradient>
+                <path id="h-spark" d="M0-1C.1-.25.25-.1 1 0 .25.1.1.25 0 1-.1.25-.25.1-1 0-.25-.1-.1-.25 0-1z" />
+              </defs>
+              <rect width="600" height="760" fill="url(#h-sky)" />
+              <g fill="#e8fff3">
+                <use href="#h-spark" transform="translate(536 340) scale(8)" opacity=".55" />
+                <use href="#h-spark" transform="translate(214 252) scale(6)" opacity=".5" />
+                <use href="#h-spark" transform="translate(470 54) scale(5)" opacity=".6" />
+                <circle cx="60" cy="182" r="1.4" opacity=".7" /><circle cx="182" cy="40" r="1.2" opacity=".6" />
+                <circle cx="262" cy="196" r="1.6" opacity=".5" /><circle cx="336" cy="58" r="1.2" opacity=".7" />
+                <circle cx="566" cy="252" r="1.4" opacity=".6" /><circle cx="152" cy="384" r="1.2" opacity=".5" />
+                <circle cx="40" cy="58" r="1.2" opacity=".6" /><circle cx="380" cy="318" r="1.4" opacity=".5" />
               </g>
-            </defs>
-            <rect width="600" height="760" fill="url(#h-sky)" />
-            <g class="layer" style="--d: 6">
+            </svg>
+            <svg class="scene-layer" style="--d: 7" viewBox="0 0 600 760" preserveAspectRatio="xMidYMax slice">
               <g transform="translate(-24 92) scale(.86)">
                 <circle cx="420" cy="190" r="250" fill="url(#h-halo)" />
-                <path class="moon" d="M402 86a105 105 0 1 0 119 140A98 98 0 0 1 402 86z" fill="url(#g-brand)" />
+                <path d="M402 86a105 105 0 1 0 119 140A98 98 0 0 1 402 86z" fill="url(#g-brand)" />
               </g>
-            </g>
-            <g class="layer" style="--d: 16" fill="#e8fff3">
-              <g transform="translate(300 118) scale(13)"><path class="twinkle" d="M0-1C.1-.25.25-.1 1 0 .25.1.1.25 0 1-.1.25-.25.1-1 0-.25-.1-.1-.25 0-1z" /></g>
-              <g transform="translate(536 340) scale(9)"><path class="twinkle t2" d="M0-1C.1-.25.25-.1 1 0 .25.1.1.25 0 1-.1.25-.25.1-1 0-.25-.1-.1-.25 0-1z" /></g>
-              <g transform="translate(118 92) scale(8)"><path class="twinkle t3" d="M0-1C.1-.25.25-.1 1 0 .25.1.1.25 0 1-.1.25-.25.1-1 0-.25-.1-.1-.25 0-1z" /></g>
-              <g transform="translate(214 252) scale(6)"><path class="twinkle t4" d="M0-1C.1-.25.25-.1 1 0 .25.1.1.25 0 1-.1.25-.25.1-1 0-.25-.1-.1-.25 0-1z" /></g>
-              <g transform="translate(78 330) scale(10)"><path class="twinkle t2" d="M0-1C.1-.25.25-.1 1 0 .25.1.1.25 0 1-.1.25-.25.1-1 0-.25-.1-.1-.25 0-1z" /></g>
-              <g transform="translate(470 54) scale(5)"><path class="twinkle t3" d="M0-1C.1-.25.25-.1 1 0 .25.1.1.25 0 1-.1.25-.25.1-1 0-.25-.1-.1-.25 0-1z" /></g>
-              <circle cx="60" cy="182" r="1.4" opacity=".7" /><circle cx="182" cy="40" r="1.2" opacity=".6" />
-              <circle cx="262" cy="196" r="1.6" opacity=".5" /><circle cx="336" cy="58" r="1.2" opacity=".7" />
-              <circle cx="566" cy="252" r="1.4" opacity=".6" /><circle cx="152" cy="384" r="1.2" opacity=".5" />
-              <circle cx="40" cy="58" r="1.2" opacity=".6" /><circle cx="380" cy="318" r="1.4" opacity=".5" />
-            </g>
-            <g class="layer" style="--d: 4">
+            </svg>
+            <svg class="scene-layer" style="--d: 4" viewBox="0 0 600 760" preserveAspectRatio="xMidYMax slice">
               <g fill="url(#h-back)">
                 <path d="M-30 800V585L60 470l90 115v215z" />
                 <path d="M150 800V600l65-95 65 95v200z" />
@@ -310,13 +302,14 @@
                 <path d="M470 800V600l75-105 95 105v200z" />
               </g>
               <circle cx="300" cy="392" r="9" fill="none" stroke="#3fdc9a" stroke-opacity=".35" stroke-width="2" />
-              <g opacity=".55">
-                <use href="#h-eye" transform="translate(60 545) scale(.7)" />
-                <use href="#h-eye" transform="translate(405 548) scale(.7)" />
-                <use href="#h-eye" transform="translate(548 560) scale(.6)" />
+              <g fill="#ffd98a" opacity=".4">
+                <rect x="292" y="430" width="16" height="24" rx="8" />
+                <rect x="40" y="610" width="14" height="20" rx="3" /><rect x="70" y="610" width="14" height="20" rx="3" />
+                <rect x="390" y="620" width="14" height="20" rx="3" /><rect x="420" y="620" width="14" height="20" rx="3" />
+                <rect x="530" y="625" width="14" height="20" rx="3" />
               </g>
-            </g>
-            <g class="layer" style="--d: 12">
+            </svg>
+            <svg class="scene-layer" style="--d: 12" viewBox="0 0 600 760" preserveAspectRatio="xMidYMax slice">
               <g fill="url(#h-front)" stroke="#ffffff" stroke-opacity=".05">
                 <path d="M-40 800V640L95 455l135 185v160z" />
                 <path d="M200 800V665l105-117 105 117v135z" />
@@ -325,15 +318,21 @@
               <g fill="none" stroke="#3fdc9a" stroke-opacity=".38" stroke-width="2" stroke-linecap="round">
                 <path d="M95 455 230 640" /><path d="M305 548 410 665" /><path d="M510 445 640 630" />
               </g>
-              <g transform="translate(95 560) scale(1.25)"><g class="eye"><use href="#h-eye" /></g></g>
-              <g transform="translate(55 626) scale(.85)"><g class="eye e2"><use href="#h-eye" /></g></g>
-              <g transform="translate(135 626) scale(.85)"><g class="eye e3"><use href="#h-eye" /></g></g>
-              <g transform="translate(305 626)"><g class="eye e2"><use href="#h-eye" /></g></g>
-              <g transform="translate(510 556) scale(1.3)"><g class="eye e3"><use href="#h-eye" /></g></g>
-              <g transform="translate(466 614) scale(.85)"><g class="eye"><use href="#h-eye" /></g></g>
-              <g transform="translate(554 614) scale(.85)"><g class="eye e2"><use href="#h-eye" /></g></g>
-            </g>
-          </svg>
+              <g fill="#ffd98a">
+                <rect x="30" y="684" width="22" height="32" rx="4" opacity=".85" />
+                <rect x="84" y="684" width="22" height="32" rx="4" opacity=".55" />
+                <rect x="138" y="684" width="22" height="32" rx="4" opacity=".8" />
+                <rect x="262" y="704" width="20" height="30" rx="4" opacity=".6" />
+                <rect x="328" y="704" width="20" height="30" rx="4" opacity=".85" />
+                <rect x="440" y="676" width="22" height="32" rx="4" opacity=".75" />
+                <rect x="498" y="676" width="22" height="32" rx="4" opacity=".9" />
+                <rect x="556" y="676" width="22" height="32" rx="4" opacity=".5" />
+              </g>
+            </svg>
+          </div>
+          <svg class="scene-spark ss1" aria-hidden="true"><use href="#i-spark" /></svg>
+          <svg class="scene-spark ss2" aria-hidden="true"><use href="#i-spark" /></svg>
+          <svg class="scene-spark ss3" aria-hidden="true"><use href="#i-spark" /></svg>
           <div class="bubbles" aria-hidden="true"></div>
           <div class="image-topline">
             <span>CU GRIJĂ PENTRU FIECARE DETALIU</span>
@@ -351,13 +350,13 @@
               <path id="badge-circle" d="M60 60m-45 0a45 45 0 1 1 90 0a45 45 0 1 1-90 0" fill="none" />
               <text><textPath href="#badge-circle" textLength="280" lengthAdjust="spacing">LEXYNS CLEAN ✦ SIBIU ✦ NONSTOP ✦</textPath></text>
             </svg>
-            <svg class="icon" aria-hidden="true"><use href="#i-spark" /></svg>
+            <img src="assets/logo-mark.png" alt="" width="196" height="202" />
           </div>
           <span class="bubble-hint" aria-hidden="true">Atinge bulele ✦</span>
           <div class="image-caption">
             <span
-              >Ochii Sibiului văd totul.<br />
-              <strong>Inclusiv cât de curat e la tine.</strong>
+              >Mai mult decât curat.<br />
+              <strong>Un spațiu în care respiri ușor.</strong>
             </span>
             <a href="#despre" class="round-link" aria-label="Află mai multe despre Lexyns CLEAN"
               ><svg class="icon" aria-hidden="true"><use href="#i-down" /></svg
@@ -388,7 +387,7 @@
           <span>01 / DESPRE LEXYNS CLEAN</span>
           <span>CURAT. SIMPLU. DE ÎNCREDERE.</span>
         </div>
-        <div class="intro-grid">
+        <div class="loader-grid">
           <h2>
             Curățenie serioasă.<br />
             <span class="muted">Oameni de încredere.</span>
@@ -680,10 +679,6 @@
                 <stop offset=".58" stop-color="#fff" stop-opacity=".3" />
                 <stop offset=".64" stop-color="#fff" stop-opacity="0" />
               </linearGradient>
-              <g id="w-eye">
-                <path d="M-22 6Q0-18 22 6Q0 2-22 6z" fill="#8a3826" />
-                <path d="M-12 4.6Q0-6 12 4.6Q0 2.8-12 4.6z" fill="#2c1712" />
-              </g>
             </defs>
             <rect width="800" height="600" fill="url(#w-sky)" />
             <circle cx="630" cy="120" r="150" fill="url(#w-sun)" />
@@ -701,8 +696,6 @@
             <g fill="#d9876a">
               <path d="M-20 600V410l100-120 100 120v190z" /><path d="M560 600V410l90-118 110 118v190z" />
             </g>
-            <use href="#w-eye" transform="translate(80 372) scale(.7)" opacity=".8" />
-            <use href="#w-eye" transform="translate(655 372) scale(.7)" opacity=".8" />
             <rect x="20" y="452" width="232" height="160" fill="#f2d49b" />
             <rect x="272" y="472" width="256" height="140" fill="#f6ebd8" />
             <rect x="548" y="452" width="240" height="160" fill="#eab9a3" />
@@ -712,9 +705,6 @@
             <g fill="none" stroke="#ffffff" stroke-opacity=".35" stroke-width="3" stroke-linecap="round">
               <path d="M136 268 272 462" /><path d="M400 330 548 482" /><path d="M668 262 808 462" />
             </g>
-            <use href="#w-eye" transform="translate(136 384) scale(1.2)" />
-            <use href="#w-eye" transform="translate(400 430)" />
-            <use href="#w-eye" transform="translate(668 380) scale(1.2)" />
             <g fill="#5d7974">
               <rect x="50" y="500" width="36" height="52" rx="3" /><rect x="118" y="500" width="36" height="52" rx="3" /><rect x="186" y="500" width="36" height="52" rx="3" />
               <rect x="300" y="512" width="34" height="48" rx="3" /><rect x="366" y="512" width="34" height="48" rx="3" /><rect x="432" y="512" width="34" height="48" rx="3" />
@@ -898,9 +888,8 @@
     </main>
     <footer data-spotlight>
       <div class="footer-top">
-        <a href="#" class="brand">
-          <svg class="brand-mark" aria-hidden="true"><use href="#logo" /></svg>
-          <span>lexyns<small>CLEAN · SIBIU</small></span>
+        <a href="#" class="footer-logo" aria-label="Lexyns CLEAN, înapoi sus">
+          <img src="assets/logo.png" alt="" width="452" height="352" loading="lazy" />
         </a>
         <p>Curat ca în prima zi.</p>
         <div class="footer-links">
