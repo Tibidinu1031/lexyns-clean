@@ -1,0 +1,10 @@
+{
+  "name": "lexyns-clean-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server.mjs",
+    "build": "node build.mjs",
+    "check": "node --check app.js && node --check server.mjs && node --check build.mjs"
+  }
+}
