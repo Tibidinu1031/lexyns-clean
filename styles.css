@@ -2082,14 +2082,23 @@ html.no-loader .loader {
   --rx: 0deg;
   --ry: 0deg;
   position: relative;
+  isolation: isolate;
   overflow: hidden;
-  width: min(360px, 74vw, calc(var(--vh) * 52));
+  display: grid;
+  place-items: center;
+  width: min(390px, 80vw, calc(var(--vh) * 60));
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 38%, #0f2c26, #030807 72%);
+  box-shadow:
+    0 0 0 1.5px #3fdc9a66,
+    0 0 0 9px #3fdc9a14;
   transform: perspective(800px) rotateX(var(--rx)) rotateY(var(--ry));
   transition: transform 0.4s var(--ease-out);
 }
 .loader-logo img {
   display: block;
-  width: 100%;
+  width: 84%;
   height: auto;
   animation: loader-logo-in 0.6s var(--ease-out) both;
 }
@@ -3034,6 +3043,11 @@ html.lite .bubble-hint {
 }
 html.lite .swoosh path {
   stroke-dashoffset: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html.lite .loader-shine {
+    animation: loader-shine 0.9s 0.25s ease-in-out both !important;
+  }
 }
 html.lite .reveal {
   opacity: 1;

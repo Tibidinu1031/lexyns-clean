@@ -45,7 +45,7 @@ function runLoader() {
   const bar = loader.querySelector(".loader-progress");
   const started = performance.now();
   const calm = reducedMotion.matches || isLite();
-  const minimum = calm ? 400 : 1000;
+  const minimum = reducedMotion.matches ? 400 : 1000;
   const scrollKeys = [" ", "ArrowDown", "ArrowUp", "PageDown", "PageUp", "Home", "End"];
   let loaded = 0,
     finished = false;
