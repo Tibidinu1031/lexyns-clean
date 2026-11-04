@@ -1,12 +1,16 @@
-document.documentElement.classList.add("js");
+const root = document.documentElement;
+root.classList.add("js");
 
 const menuButton = document.querySelector(".menu-toggle");
 const navigation = document.querySelector("#navigation");
 const header = document.querySelector(".site-header");
+const progressBar = header.querySelector(".reading-progress");
 const mobileCall = document.querySelector(".mobile-call");
 const dialog = document.querySelector("#appointment-dialog");
+const hero = document.querySelector(".hero");
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+const isLite = () => root.classList.contains("lite");
 
 // Coalesce pointer moves into one update per frame so fast mice don't flood style recalcs.
 function onPointerFrame(element, handler) {
@@ -30,14 +34,18 @@ function onPointerFrame(element, handler) {
   };
 }
 
-// Loading screen: shows the logo until the page has loaded, then lifts away.
+// Loading screen: shows the logo on the first page of a visit, then lifts away.
 const loader = document.querySelector("#loader");
-function runIntro() {
-  const root = document.documentElement;
+function runLoader() {
+  if (root.classList.contains("no-loader")) {
+    loader.remove();
+    return;
+  }
   const logo = loader.querySelector(".loader-logo");
   const bar = loader.querySelector(".loader-progress");
   const started = performance.now();
-  const minimum = reducedMotion.matches ? 500 : 1900;
+  const calm = reducedMotion.matches || isLite();
+  const minimum = calm ? 400 : 1000;
   const scrollKeys = [" ", "ArrowDown", "ArrowUp", "PageDown", "PageUp", "Home", "End"];
   let loaded = 0,
     finished = false;
@@ -45,7 +53,7 @@ function runIntro() {
     loaded = Math.max(loaded, value);
     bar.style.setProperty("--load", loaded.toFixed(3));
   };
-  const creep = setInterval(() => setLoad(Math.min(0.9, loaded + 0.06)), 160);
+  const creep = setInterval(() => setLoad(Math.min(0.9, loaded + 0.08)), 120);
   function blockScroll(event) {
     if (event.type === "keydown" && !scrollKeys.includes(event.key)) return;
     event.preventDefault();
@@ -61,19 +69,22 @@ function runIntro() {
     window.removeEventListener("keydown", blockScroll);
     loader.classList.add("leave");
     root.classList.add("intro-done");
-    setTimeout(() => loader.remove(), 1100);
+    try {
+      sessionStorage.setItem("lexyns-seen", "1");
+    } catch {}
+    setTimeout(() => loader.remove(), 800);
   }
-  setLoad(0.15);
-  document.fonts.ready.then(() => setLoad(0.55));
+  setLoad(0.2);
+  document.fonts.ready.then(() => setLoad(0.6));
   const whenLoaded = () =>
-    setTimeout(leave, Math.max(250, minimum - (performance.now() - started)));
+    setTimeout(leave, Math.max(150, minimum - (performance.now() - started)));
   if (document.readyState === "complete") whenLoaded();
   else window.addEventListener("load", whenLoaded, { once: true });
   window.addEventListener("wheel", blockScroll, { passive: false });
   window.addEventListener("touchmove", blockScroll, { passive: false });
   window.addEventListener("keydown", blockScroll);
   loader.addEventListener("click", leave);
-  if (reducedMotion.matches) return;
+  if (calm) return;
 
   let lastSpark = 0;
   function spark(x, y, size = 10 + Math.random() * 14) {
@@ -94,17 +105,17 @@ function runIntro() {
     const y = (event.clientY - (box.top + box.height / 2)) / innerHeight;
     logo.style.setProperty("--rx", `${(-y * 16).toFixed(2)}deg`);
     logo.style.setProperty("--ry", `${(x * 20).toFixed(2)}deg`);
-    if (event.timeStamp - lastSpark > 45) {
+    if (event.timeStamp - lastSpark > 70) {
       lastSpark = event.timeStamp;
       spark(event.clientX, event.clientY);
     }
   });
   loader.addEventListener("pointerdown", (event) => {
-    for (let index = 0; index < 8; index++)
+    for (let index = 0; index < 6; index++)
       spark(event.clientX, event.clientY, 12 + Math.random() * 18);
   });
 }
-if (loader) runIntro();
+if (loader) runLoader();
 
 function closeMenu() {
   menuButton.setAttribute("aria-expanded", "false");
@@ -158,6 +169,16 @@ quoteForm.addEventListener("input", updateQuote);
 quoteForm.addEventListener("submit", (event) => event.preventDefault());
 updateQuote();
 
+// Phone bar: only between the hero and the contact section, and never over the dialog.
+let heroInView = true,
+  contactNear = false;
+function updateMobileCall() {
+  mobileCall.classList.toggle(
+    "visible",
+    !heroInView && !contactNear && !dialog.open,
+  );
+}
+
 // Keep telephone links functional when JavaScript or native dialogs are unavailable.
 if (typeof dialog.showModal === "function") {
   document.querySelectorAll("[data-appointment]").forEach((link) => {
@@ -174,7 +195,8 @@ if (typeof dialog.showModal === "function") {
       }
       closeMenu();
       dialog.showModal();
-      mobileCall.classList.remove("visible");
+      root.classList.add("dialog-open");
+      updateMobileCall();
     });
   });
   dialog
@@ -208,7 +230,10 @@ if (typeof dialog.showModal === "function") {
       first.focus();
     }
   });
-  dialog.addEventListener("close", updateScroll);
+  dialog.addEventListener("close", () => {
+    root.classList.remove("dialog-open");
+    updateMobileCall();
+  });
 }
 
 document.querySelectorAll(".copy-button").forEach((button) => {
@@ -234,14 +259,51 @@ document.querySelectorAll(".copy-button").forEach((button) => {
   });
 });
 
+// Observers replace per-frame layout reads: the scroll handler below only moves the progress bar.
 const sectionLinks = [...navigation.querySelectorAll('a[href^="#"]')];
 const sections = sectionLinks.map((link) =>
   document.querySelector(link.getAttribute("href")),
 );
-const contact = document.querySelector("#contact");
+const sectionsInBand = new Set();
+const sectionObserver = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) =>
+      entry.isIntersecting
+        ? sectionsInBand.add(entry.target)
+        : sectionsInBand.delete(entry.target),
+    );
+    sectionLinks.forEach((link, index) => {
+      if (sectionsInBand.has(sections[index]))
+        link.setAttribute("aria-current", "location");
+      else link.removeAttribute("aria-current");
+    });
+  },
+  { rootMargin: "-30% 0px -69% 0px" },
+);
+sections.forEach((section) => sectionObserver.observe(section));
+
+new IntersectionObserver(([entry]) => {
+  heroInView = entry.isIntersecting;
+  hero.classList.toggle("paused", !heroInView);
+  updateMobileCall();
+}).observe(hero);
+new IntersectionObserver(
+  ([entry]) => {
+    contactNear = entry.isIntersecting || entry.boundingClientRect.top < 0;
+    updateMobileCall();
+  },
+  { rootMargin: "0px 0px -25% 0px" },
+).observe(document.querySelector("#contact"));
+const marquee = document.querySelector(".marquee");
+new IntersectionObserver(([entry]) =>
+  marquee.classList.toggle("paused", !entry.isIntersecting),
+).observe(marquee);
+
 const steps = document.querySelector("#steps");
 const stepItems = [...steps.querySelectorAll(".step")];
-function updateSteps(box = steps.getBoundingClientRect()) {
+let stepsNear = false;
+function updateSteps() {
+  const box = steps.getBoundingClientRect();
   const progress = Math.min(
     1,
     Math.max(0, (innerHeight * 0.8 - box.top) / (innerHeight * 0.2 + box.height)),
@@ -254,38 +316,25 @@ function updateSteps(box = steps.getBoundingClientRect()) {
     ),
   );
 }
+new IntersectionObserver(
+  ([entry]) => {
+    stepsNear = entry.isIntersecting;
+    updateSteps();
+  },
+  { rootMargin: "120px 0px" },
+).observe(document.querySelector("#cum-lucram"));
+
 let scheduled = false,
-  currentSection;
-// Read every measurement first, then write, so each scroll frame lays out at most once.
+  scrolled = false;
 function updateScroll() {
   const y = scrollY;
-  const range = document.documentElement.scrollHeight - innerHeight;
-  const headerHeight = header.offsetHeight;
-  const contactVisible =
-    contact.getBoundingClientRect().top < innerHeight * 0.75;
-  let current = null;
-  sections.forEach((section, index) => {
-    if (section.getBoundingClientRect().top <= headerHeight + 150)
-      current = index;
-  });
-  const stepsBox = steps.getBoundingClientRect();
-  header.classList.toggle("scrolled", y > 50);
-  header.style.setProperty(
-    "--reading-progress",
-    range > 0 ? Math.min(1, y / range).toFixed(4) : 0,
-  );
-  mobileCall.classList.toggle(
-    "visible",
-    y > 580 && !contactVisible && !dialog.open,
-  );
-  if (current !== currentSection) {
-    currentSection = current;
-    sectionLinks.forEach((link, index) => {
-      if (index === current) link.setAttribute("aria-current", "location");
-      else link.removeAttribute("aria-current");
-    });
+  const range = root.scrollHeight - innerHeight;
+  if (stepsNear) updateSteps();
+  if (y > 50 !== scrolled) {
+    scrolled = y > 50;
+    header.classList.toggle("scrolled", scrolled);
   }
-  updateSteps(stepsBox);
+  progressBar.style.transform = `scaleX(${range > 0 ? Math.min(1, y / range).toFixed(4) : 0})`;
   scheduled = false;
 }
 window.addEventListener(
@@ -311,7 +360,7 @@ function moveRooms(direction) {
     parseFloat(getComputedStyle(track).gap);
   track.scrollBy({
     left: direction * step,
-    behavior: reducedMotion.matches ? "instant" : "smooth",
+    behavior: reducedMotion.matches || isLite() ? "instant" : "smooth",
   });
 }
 function updateRooms() {
@@ -355,17 +404,16 @@ updateRooms();
 document.fonts.ready.then(updateRooms);
 document.querySelector("#year").textContent = new Date().getFullYear();
 
-// Pointer effects: magnetic buttons, spotlights, tilting cards and hero parallax.
+// Pointer effects: magnetic buttons, tilting cards and hero parallax. Transforms only, never repaints.
 if (finePointer.matches && !reducedMotion.matches) {
   document.querySelectorAll("[data-magnetic]").forEach((element) => {
     const cancel = onPointerFrame(element, (event) => {
+      if (isLite()) return;
       const box = element.getBoundingClientRect();
-      const x = event.clientX - box.left;
-      const y = event.clientY - box.top;
-      element.style.setProperty("--sx", `${x.toFixed(1)}px`);
-      element.style.setProperty("--sy", `${y.toFixed(1)}px`);
-      element.style.setProperty("--mx", `${((x / box.width - 0.5) * 12).toFixed(2)}px`);
-      element.style.setProperty("--my", `${((y / box.height - 0.5) * 10).toFixed(2)}px`);
+      const x = (event.clientX - box.left) / box.width - 0.5;
+      const y = (event.clientY - box.top) / box.height - 0.5;
+      element.style.setProperty("--mx", `${(x * 12).toFixed(2)}px`);
+      element.style.setProperty("--my", `${(y * 10).toFixed(2)}px`);
     });
     element.addEventListener("pointerleave", () => {
       cancel();
@@ -373,15 +421,9 @@ if (finePointer.matches && !reducedMotion.matches) {
       element.style.setProperty("--my", "0px");
     });
   });
-  document.querySelectorAll("[data-spotlight]").forEach((element) => {
-    onPointerFrame(element, (event) => {
-      const box = element.getBoundingClientRect();
-      element.style.setProperty("--spot-x", `${(event.clientX - box.left).toFixed(1)}px`);
-      element.style.setProperty("--spot-y", `${(event.clientY - box.top).toFixed(1)}px`);
-    });
-  });
   document.querySelectorAll("[data-tilt]").forEach((element) => {
     const cancel = onPointerFrame(element, (event) => {
+      if (isLite()) return;
       const box = element.getBoundingClientRect();
       const x = (event.clientX - box.left) / box.width - 0.5;
       const y = (event.clientY - box.top) / box.height - 0.5;
@@ -396,6 +438,7 @@ if (finePointer.matches && !reducedMotion.matches) {
   });
   const visual = document.querySelector("[data-parallax]");
   const cancelParallax = onPointerFrame(visual, (event) => {
+    if (isLite()) return;
     const box = visual.getBoundingClientRect();
     visual.style.setProperty(
       "--px",
@@ -417,10 +460,11 @@ if (finePointer.matches && !reducedMotion.matches) {
 const bubbleLayer = document.querySelector(".bubbles");
 const bubbleHint = document.querySelector(".bubble-hint");
 function spawnBubble(initial = false) {
+  if (isLite()) return;
   const bubble = document.createElement("span");
-  const duration = 9 + Math.random() * 9;
+  const duration = 11 + Math.random() * 9;
   bubble.className = "bubble";
-  bubble.style.setProperty("--s", `${16 + Math.random() * 46}px`);
+  bubble.style.setProperty("--s", `${18 + Math.random() * 40}px`);
   bubble.style.setProperty("--x", `${4 + Math.random() * 88}%`);
   bubble.style.setProperty("--t", `${duration}s`);
   bubble.style.setProperty("--sway", `${(Math.random() - 0.5) * 80}px`);
@@ -446,19 +490,16 @@ function popBubble(bubble) {
     spawnBubble();
   }, 1400);
 }
-if (!reducedMotion.matches) {
-  const count = innerWidth < 640 ? 5 : 8;
-  for (let index = 0; index < count; index++) spawnBubble(true);
-  if ("IntersectionObserver" in window)
-    new IntersectionObserver(([entry]) =>
-      bubbleLayer.classList.toggle("paused", !entry.isIntersecting),
-    ).observe(bubbleLayer);
-} else bubbleHint.classList.add("hide");
+if (!reducedMotion.matches && innerWidth > 640)
+  for (let index = 0; index < 4; index++) spawnBubble(true);
+else bubbleHint.classList.add("hide");
 
 const checklist = [...document.querySelectorAll(".checklist span")];
 let checklistIndex = 0;
 function tickChecklist() {
-  if (checklistIndex < checklist.length) {
+  if (hero.classList.contains("paused")) {
+    setTimeout(tickChecklist, 1000);
+  } else if (checklistIndex < checklist.length) {
     checklist[checklistIndex++].classList.add("done");
     setTimeout(tickChecklist, 850);
   } else {
@@ -489,13 +530,14 @@ let wipeCleaned = 0,
   wipeHeight = 0,
   wipeLast = null,
   wipeDone = false,
-  wipeFrame = 0;
+  wipeFrame = 0,
+  wipeBrush = null;
 const brushRadius = () => Math.max(24, wipeWidth * 0.055);
 
 function paintGrime() {
   cancelAnimationFrame(wipeFrame);
   const box = wipeStage.getBoundingClientRect();
-  const ratio = Math.min(window.devicePixelRatio || 1, 2);
+  const ratio = Math.min(window.devicePixelRatio || 1, 1.25);
   const context = wipeContext;
   wipeWidth = box.width;
   wipeHeight = box.height;
@@ -509,10 +551,10 @@ function paintGrime() {
   film.addColorStop(1, "rgba(98, 84, 62, 0.94)");
   context.fillStyle = film;
   context.fillRect(0, 0, wipeWidth, wipeHeight);
-  for (let index = 0; index < 28; index++) {
+  for (let index = 0; index < 14; index++) {
     const x = Math.random() * wipeWidth;
     const y = Math.random() * wipeHeight;
-    const radius = 30 + Math.random() * 120;
+    const radius = 40 + Math.random() * 110;
     const blotch = context.createRadialGradient(x, y, 0, x, y, radius);
     blotch.addColorStop(
       0,
@@ -522,13 +564,13 @@ function paintGrime() {
     context.fillStyle = blotch;
     context.fillRect(x - radius, y - radius, radius * 2, radius * 2);
   }
-  for (let index = 0; index < 1400; index++) {
+  for (let index = 0; index < 500; index++) {
     const size = Math.random() * 2.6;
     context.fillStyle =
       Math.random() > 0.5 ? "rgba(50, 40, 26, 0.4)" : "rgba(214, 200, 168, 0.3)";
     context.fillRect(Math.random() * wipeWidth, Math.random() * wipeHeight, size, size);
   }
-  for (let index = 0; index < 18; index++) {
+  for (let index = 0; index < 10; index++) {
     const x = Math.random() * wipeWidth;
     const y = Math.random() * wipeHeight * 0.6;
     const length = 40 + Math.random() * 140;
@@ -544,7 +586,23 @@ function paintGrime() {
   context.textBaseline = "middle";
   context.fillStyle = "rgba(0, 0, 0, 0.5)";
   context.fillText("ȘTERGE-MĂ ✦", wipeWidth / 2, wipeHeight * 0.46);
-  context.globalCompositeOperation = "source-over";
+  // One pre-rendered soft brush is much cheaper than a new gradient for every stamp.
+  const brushSize = Math.ceil(brushRadius() * 2 * ratio);
+  wipeBrush = document.createElement("canvas");
+  wipeBrush.width = wipeBrush.height = brushSize;
+  const brushContext = wipeBrush.getContext("2d");
+  const soft = brushContext.createRadialGradient(
+    brushSize / 2,
+    brushSize / 2,
+    brushSize * 0.1,
+    brushSize / 2,
+    brushSize / 2,
+    brushSize / 2,
+  );
+  soft.addColorStop(0, "rgba(0, 0, 0, 1)");
+  soft.addColorStop(1, "rgba(0, 0, 0, 0)");
+  brushContext.fillStyle = soft;
+  brushContext.fillRect(0, 0, brushSize, brushSize);
   wipeGrid = new Uint8Array(wipeCells.columns * wipeCells.rows);
   wipeCleaned = 0;
   wipeDone = false;
@@ -556,14 +614,7 @@ function paintGrime() {
 }
 function wipeAt(x, y) {
   const radius = brushRadius();
-  const brush = wipeContext.createRadialGradient(x, y, radius * 0.2, x, y, radius);
-  brush.addColorStop(0, "rgba(0, 0, 0, 1)");
-  brush.addColorStop(1, "rgba(0, 0, 0, 0)");
-  wipeContext.globalCompositeOperation = "destination-out";
-  wipeContext.fillStyle = brush;
-  wipeContext.beginPath();
-  wipeContext.arc(x, y, radius, 0, Math.PI * 2);
-  wipeContext.fill();
+  wipeContext.drawImage(wipeBrush, x - radius, y - radius, radius * 2, radius * 2);
   const cellWidth = wipeWidth / wipeCells.columns;
   const cellHeight = wipeHeight / wipeCells.rows;
   const reach = radius * 0.75;
@@ -585,10 +636,11 @@ function wipeAt(x, y) {
   }
 }
 function wipeTo(x, y) {
-  if (wipeDone) return;
+  if (wipeDone || !wipeBrush) return;
+  wipeContext.globalCompositeOperation = "destination-out";
   if (wipeLast) {
     const distance = Math.hypot(x - wipeLast.x, y - wipeLast.y);
-    const count = Math.max(1, Math.ceil(distance / 6));
+    const count = Math.max(1, Math.ceil(distance / (brushRadius() * 0.3)));
     for (let index = 1; index <= count; index++)
       wipeAt(
         wipeLast.x + ((x - wipeLast.x) * index) / count,
@@ -615,7 +667,9 @@ function finishWipe() {
   wipeSection.style.setProperty("--clean", 100);
   wipeStatus.textContent = "Geamul este curat.";
   setTimeout(() => {
-    if (wipeDone) wipeContext.clearRect(0, 0, wipeWidth, wipeHeight);
+    if (!wipeDone) return;
+    wipeContext.globalCompositeOperation = "source-over";
+    wipeContext.clearRect(0, 0, wipeWidth, wipeHeight);
   }, 900);
 }
 function wipePoint(event) {
@@ -668,14 +722,20 @@ wipeAuto.addEventListener("click", () => {
   wipeFrame = requestAnimationFrame(sweep);
 });
 wipeReset.addEventListener("click", paintGrime);
-if ("ResizeObserver" in window)
-  new ResizeObserver(() => {
-    if (Math.abs(wipeStage.clientWidth - wipeWidth) > 1) paintGrime();
-  }).observe(wipeStage);
-else paintGrime();
-document.fonts.ready.then(() => {
-  if (!wipeCleaned) paintGrime();
-});
+// The grime is only painted when the window is about to scroll into view.
+new IntersectionObserver(
+  ([entry], observer) => {
+    if (!entry.isIntersecting) return;
+    observer.disconnect();
+    document.fonts.ready.then(() => {
+      paintGrime();
+      new ResizeObserver(() => {
+        if (Math.abs(wipeStage.clientWidth - wipeWidth) > 1) paintGrime();
+      }).observe(wipeStage);
+    });
+  },
+  { rootMargin: "600px 0px" },
+).observe(wipeStage);
 
 function countUp(element) {
   const target = Number(element.dataset.count);
@@ -683,7 +743,7 @@ function countUp(element) {
   const format = (value) => value.toFixed(decimals).replace(".", ",");
   const start = performance.now();
   const frame = (now) => {
-    const progress = Math.min(1, (now - start) / 1400);
+    const progress = Math.min(1, (now - start) / 900);
     element.textContent = format(target * (1 - Math.pow(1 - progress, 3)));
     if (progress < 1) requestAnimationFrame(frame);
   };
@@ -691,13 +751,13 @@ function countUp(element) {
   requestAnimationFrame(frame);
 }
 
-if ("IntersectionObserver" in window && !reducedMotion.matches) {
+if (!reducedMotion.matches && !isLite()) {
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           entry.target.classList.add("visible");
-          entry.target.querySelectorAll("[data-count]").forEach(countUp);
+          if (!isLite()) entry.target.querySelectorAll("[data-count]").forEach(countUp);
           observer.unobserve(entry.target);
         }
       });
@@ -705,13 +765,56 @@ if ("IntersectionObserver" in window && !reducedMotion.matches) {
     { threshold: 0.08 },
   );
   document
-    .querySelectorAll(
-      ".intro-grid, .stats, .section-heading, .service-list, .rooms-track, .wipe-copy, .wipe-stage, .step, .contact-grid, .footer-word",
-    )
+    .querySelectorAll(".intro-grid, .section-heading, .wipe-copy, .step")
     .forEach((element) => {
       if (element.matches(".step"))
-        element.style.setProperty("--delay", `${stepItems.indexOf(element) * 0.12}s`);
+        element.style.setProperty("--delay", `${stepItems.indexOf(element) * 0.1}s`);
       element.classList.add("reveal");
       observer.observe(element);
     });
+  observer.observe(document.querySelector(".stats"));
 }
+
+// Light mode: devices drawing everything on the CPU, or stuck at a low frame rate, drop background motion.
+// Add ?full to the address to see every effect anyway.
+function goLite() {
+  root.classList.add("lite");
+  bubbleLayer.replaceChildren();
+  try {
+    localStorage.setItem("lexyns-lite", "1");
+  } catch {}
+}
+function softwareRendering() {
+  const gl = document.createElement("canvas").getContext("webgl");
+  if (!gl) return true;
+  const info = gl.getExtension("WEBGL_debug_renderer_info");
+  const name = info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : "";
+  gl.getExtension("WEBGL_lose_context")?.loseContext();
+  return /basic render|swiftshader|llvmpipe|software/i.test(name);
+}
+function probeFrameRate() {
+  let frames = 0,
+    slow = 0,
+    last = performance.now();
+  const frame = (now) => {
+    const delta = now - last;
+    last = now;
+    if (document.visibilityState === "visible" && delta < 500) {
+      frames++;
+      if (delta > 40) slow++;
+    }
+    if (frames < 90) requestAnimationFrame(frame);
+    else if (slow / frames > 0.3) goLite();
+  };
+  requestAnimationFrame(frame);
+}
+if (!isLite() && !reducedMotion.matches && !location.search.includes("full"))
+  window.addEventListener(
+    "load",
+    () =>
+      setTimeout(() => {
+        if (softwareRendering()) goLite();
+        else probeFrameRate();
+      }, 1800),
+    { once: true },
+  );

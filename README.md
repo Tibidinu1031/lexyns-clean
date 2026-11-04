@@ -19,18 +19,19 @@ Cu Node.js instalat, rulează `npm run dev` și deschide http://127.0.0.1:4173. 
 
 ## Design și interacțiuni
 
-- Logo-ul Lexyns CLEAN (`assets/logo.png`, `assets/logo-mark.png`, favicon) apare pe ecranul de încărcare, în header, în insigna din hero și în footer. Paleta e preluată din logo: negru-verde profund cu gradient mentă → aqua.
-- Ecran de încărcare: logo cu reflex de lumină, care se înclină după cursor și lasă scântei; un click, un scroll sau o tastă intră imediat pe site, altfel se ridică singur după încărcare.
-- Fundal ambiental: pete de culoare, grilă de puncte și textură fină de „hârtie”, desenate o singură dată (fără animații costisitoare la scroll).
-- Hero: butoane bold cu efect magnetic și reflex de lumină, ilustrație SVG cu acoperișurile Sibiului pe straturi separate (paralaxă fluidă pe GPU), bule de săpun care se sparg la atingere, checklist animat și insignă rotativă.
-- Benzi marquee încrucișate cu servicii (se opresc la hover).
-- Statistici cu numărătoare animată și carduri care se înclină după cursor.
-- Servicii în acordeon animat, cu spotlight care urmărește cursorul; fiecare „Cere ofertă” preselectează serviciul în fereastra de ofertă.
-- Carusel „Cameră cu cameră” cu carduri 3D și bife animate.
-- „Înainte & după”: geam prăfuit pe care vizitatorul îl curăță cu mouse-ul sau degetul (plus buton „Curăță tot”).
-- „Cum lucrăm”: linie de progres care se umple la scroll.
-- Contact: copiere număr de telefon, rating Google, program nonstop.
-- Fereastră „Cere o ofertă”: alegi serviciul, suprafața și frecvența, iar mesajul se trimite prin SMS sau se copiază.
+- Logo-ul Lexyns CLEAN (`assets/logo.webp`, `assets/logo-mark.webp`, favicon) apare pe ecranul de încărcare, în header, în insigna din hero și în footer. Paleta e preluată din logo: negru-verde profund cu gradient mentă → aqua.
+- Ecran de încărcare o dată pe sesiune: logo care se înclină după cursor și lasă scântei; un click, un scroll sau o tastă intră imediat pe site.
+- Hero-ul ocupă exact înălțimea ecranului sub meniu, fără scroll, pe laptop și pe telefon. Pe telefon, scena devine fundalul textului.
+- Scena din hero: găleată cu mop și spumă, spray Lexyns, burete și lavete, pe straturi SVG separate (paralaxă doar cu `transform`), bule de săpun care se sparg la atingere, checklist animat și insignă rotativă.
+- Bandă marquee cu servicii, statistici cu numărătoare, servicii în acordeon, carusel „Cameră cu cameră”, geam de curățat cu mouse-ul sau degetul, linie de progres la „Cum lucrăm”.
+- Fereastra „Cere o ofertă”: alegi serviciul, suprafața și frecvența, iar mesajul se trimite prin SMS sau se copiază.
+
+## Performanță
+
+- Fără strat de fundal fix, fără `backdrop-filter` și fără urmărirea cursorului prin repictare; animațiile se opresc când nu sunt pe ecran.
+- Trei fonturi WOFF2 (13 KB fiecare, cu diacritice) și logo-uri WebP.
+- **Mod ușor automat:** dacă browserul nu are accelerare video sau rulează constant cu cadre lente, site-ul adaugă clasa `lite` pe `<html>` și renunță la mișcarea de fundal (bule, bandă, paralaxă, înclinare). Hover-urile, acordeonul, caruselul, geamul și oferta rămân. Alegerea se păstrează în `localStorage` (`lexyns-lite`).
+- Adaugă `?full` la adresă ca să vezi toate efectele pe un astfel de calculator.
 - Setările „reduce motion” sunt respectate; linkurile de telefon funcționează și fără JavaScript.
 
 ## Conținut de verificat înainte de lansare

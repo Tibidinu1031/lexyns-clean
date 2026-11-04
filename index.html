@@ -22,13 +22,28 @@
     <meta property="og:locale" content="ro_RO" />
     <link rel="icon" type="image/png" href="assets/favicon.png" />
     <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
-    <link rel="preload" as="image" href="assets/logo.png" />
+    <link rel="preload" as="font" type="font/woff2" href="assets/manrope-800.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="assets/dm-sans-400.woff2" crossorigin />
     <link rel="stylesheet" href="fonts.css" />
     <link rel="stylesheet" href="styles.css" />
     <script>
-      // Show the loading screen only when scripts run; reveal the page anyway if app.js never loads.
-      document.documentElement.classList.add("js");
-      setTimeout(() => document.documentElement.classList.add("intro-done"), 6000);
+      // Decide before first paint: skip the loader on repeat visits, honour the light mode.
+      (function () {
+        var root = document.documentElement;
+        function read(name, key) {
+          try {
+            return window[name].getItem(key);
+          } catch (error) {
+            return null;
+          }
+        }
+        root.classList.add("js");
+        if (location.search.indexOf("full") < 0 && read("localStorage", "lexyns-lite")) root.classList.add("lite");
+        if (read("sessionStorage", "lexyns-seen")) root.classList.add("intro-done", "no-loader");
+        setTimeout(function () {
+          root.classList.add("intro-done");
+        }, 4000);
+      })();
     </script>
     <script src="app.js" defer></script>
   </head>
@@ -36,7 +51,7 @@
     <div class="loader" id="loader" aria-hidden="true">
       <div class="loader-stage">
         <div class="loader-logo">
-          <img src="assets/logo.png" alt="" width="452" height="352" fetchpriority="high" />
+          <img src="assets/logo.webp" alt="" width="452" height="352" fetchpriority="high" />
           <span class="loader-shine"></span>
         </div>
         <div class="loader-progress"><span></span></div>
@@ -144,12 +159,6 @@
       </symbol>
     </svg>
 
-    <div class="ambient" aria-hidden="true">
-      <span class="blob blob-1"></span>
-      <span class="blob blob-2"></span>
-      <span class="blob blob-3"></span>
-    </div>
-
     <a class="skip-link" href="#main">Sari la conținut</a>
     <div class="topbar">
       <span><i class="live-dot" aria-hidden="true"></i> SIBIU · DESCHIS NONSTOP</span>
@@ -161,7 +170,7 @@
     <header class="site-header">
       <a class="brand" href="#" aria-label="Lexyns CLEAN, pagina principală">
         <span class="brand-mark" aria-hidden="true"
-          ><img src="assets/logo-mark.png" alt="" width="196" height="202"
+          ><img src="assets/logo-mark.webp" alt="" width="160" height="165"
         /></span>
         <span>lexyns<small>CLEAN · SIBIU</small></span>
       </a>
@@ -214,7 +223,7 @@
             <svg class="h1-spark h1-spark-2" aria-hidden="true"><use href="#i-spark" /></svg>
           </h1>
           <p>
-            Curățenie pentru case, apartamente și birouri din Sibiu.<br />Tu te
+            Curățenie pentru case, apartamente și birouri din Sibiu. <br />Tu te
             bucuri de timpul liber. Noi ne ocupăm de rest.
           </p>
           <div class="hero-actions">
@@ -251,88 +260,104 @@
           </div>
         </div>
         <div class="hero-visual" data-parallax>
-          <div class="scene" aria-hidden="true">
-            <svg class="scene-layer" viewBox="0 0 600 760" preserveAspectRatio="xMidYMax slice">
-              <defs>
-                <radialGradient id="h-sky" cx="72%" cy="30%" r="95%">
-                  <stop offset="0" stop-color="#1c5446" />
-                  <stop offset=".42" stop-color="#0d2822" />
-                  <stop offset="1" stop-color="#060f0d" />
-                </radialGradient>
-                <radialGradient id="h-halo">
-                  <stop offset="0" stop-color="#3fdc9a" stop-opacity=".42" />
-                  <stop offset=".5" stop-color="#27c3cf" stop-opacity=".1" />
-                  <stop offset="1" stop-color="#27c3cf" stop-opacity="0" />
-                </radialGradient>
-                <linearGradient id="h-back" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0" stop-color="#173f36" />
-                  <stop offset="1" stop-color="#0b201c" />
-                </linearGradient>
-                <linearGradient id="h-front" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0" stop-color="#1f5143" />
-                  <stop offset=".7" stop-color="#0c1f1b" />
-                </linearGradient>
-                <path id="h-spark" d="M0-1C.1-.25.25-.1 1 0 .25.1.1.25 0 1-.1.25-.25.1-1 0-.25-.1-.1-.25 0-1z" />
-              </defs>
-              <rect width="600" height="760" fill="url(#h-sky)" />
-              <g fill="#e8fff3">
-                <use href="#h-spark" transform="translate(536 340) scale(8)" opacity=".55" />
-                <use href="#h-spark" transform="translate(214 252) scale(6)" opacity=".5" />
-                <use href="#h-spark" transform="translate(470 54) scale(5)" opacity=".6" />
-                <circle cx="60" cy="182" r="1.4" opacity=".7" /><circle cx="182" cy="40" r="1.2" opacity=".6" />
-                <circle cx="262" cy="196" r="1.6" opacity=".5" /><circle cx="336" cy="58" r="1.2" opacity=".7" />
-                <circle cx="566" cy="252" r="1.4" opacity=".6" /><circle cx="152" cy="384" r="1.2" opacity=".5" />
-                <circle cx="40" cy="58" r="1.2" opacity=".6" /><circle cx="380" cy="318" r="1.4" opacity=".5" />
-              </g>
-            </svg>
-            <svg class="scene-layer" style="--d: 7" viewBox="0 0 600 760" preserveAspectRatio="xMidYMax slice">
-              <g transform="translate(-24 92) scale(.86)">
-                <circle cx="420" cy="190" r="250" fill="url(#h-halo)" />
-                <path d="M402 86a105 105 0 1 0 119 140A98 98 0 0 1 402 86z" fill="url(#g-brand)" />
-              </g>
-            </svg>
-            <svg class="scene-layer" style="--d: 4" viewBox="0 0 600 760" preserveAspectRatio="xMidYMax slice">
-              <g fill="url(#h-back)">
-                <path d="M-30 800V585L60 470l90 115v215z" />
-                <path d="M150 800V600l65-95 65 95v200z" />
-                <path d="M276 800V352h48v448z" />
-                <path d="M270 354 300 150l30 204z" />
-                <path d="m266 354 7-36 7 36zm54 0 7-36 7 36z" />
-                <path d="M330 800V590l75-110 75 110v210z" />
-                <path d="M470 800V600l75-105 95 105v200z" />
-              </g>
-              <circle cx="300" cy="392" r="9" fill="none" stroke="#3fdc9a" stroke-opacity=".35" stroke-width="2" />
-              <g fill="#ffd98a" opacity=".4">
-                <rect x="292" y="430" width="16" height="24" rx="8" />
-                <rect x="40" y="610" width="14" height="20" rx="3" /><rect x="70" y="610" width="14" height="20" rx="3" />
-                <rect x="390" y="620" width="14" height="20" rx="3" /><rect x="420" y="620" width="14" height="20" rx="3" />
-                <rect x="530" y="625" width="14" height="20" rx="3" />
-              </g>
-            </svg>
-            <svg class="scene-layer" style="--d: 12" viewBox="0 0 600 760" preserveAspectRatio="xMidYMax slice">
-              <g fill="url(#h-front)" stroke="#ffffff" stroke-opacity=".05">
-                <path d="M-40 800V640L95 455l135 185v160z" />
-                <path d="M200 800V665l105-117 105 117v135z" />
-                <path d="M380 800V630l130-185 130 185v170z" />
-              </g>
-              <g fill="none" stroke="#3fdc9a" stroke-opacity=".38" stroke-width="2" stroke-linecap="round">
-                <path d="M95 455 230 640" /><path d="M305 548 410 665" /><path d="M510 445 640 630" />
-              </g>
-              <g fill="#ffd98a">
-                <rect x="30" y="684" width="22" height="32" rx="4" opacity=".85" />
-                <rect x="84" y="684" width="22" height="32" rx="4" opacity=".55" />
-                <rect x="138" y="684" width="22" height="32" rx="4" opacity=".8" />
-                <rect x="262" y="704" width="20" height="30" rx="4" opacity=".6" />
-                <rect x="328" y="704" width="20" height="30" rx="4" opacity=".85" />
-                <rect x="440" y="676" width="22" height="32" rx="4" opacity=".75" />
-                <rect x="498" y="676" width="22" height="32" rx="4" opacity=".9" />
-                <rect x="556" y="676" width="22" height="32" rx="4" opacity=".5" />
-              </g>
-            </svg>
-          </div>
-          <svg class="scene-spark ss1" aria-hidden="true"><use href="#i-spark" /></svg>
-          <svg class="scene-spark ss2" aria-hidden="true"><use href="#i-spark" /></svg>
-          <svg class="scene-spark ss3" aria-hidden="true"><use href="#i-spark" /></svg>
+          <svg class="scene-layer" style="--d: 3" viewBox="0 0 600 560" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+            <defs>
+              <radialGradient id="c-halo">
+                <stop offset="0" stop-color="#3fdc9a" stop-opacity=".36" />
+                <stop offset=".55" stop-color="#27c3cf" stop-opacity=".1" />
+                <stop offset="1" stop-color="#27c3cf" stop-opacity="0" />
+              </radialGradient>
+              <path id="c-spark" d="M0-1C.1-.25.25-.1 1 0 .25.1.1.25 0 1-.1.25-.25.1-1 0-.25-.1-.1-.25 0-1z" />
+            </defs>
+            <circle cx="300" cy="270" r="300" fill="url(#c-halo)" />
+            <path d="M132 46a105 105 0 1 0 119 140A98 98 0 0 1 132 46z" transform="translate(-20 -30) scale(2.1)" fill="url(#g-brand)" opacity=".2" />
+            <g fill="#e8fff3">
+              <use href="#c-spark" transform="translate(528 66) scale(8)" opacity=".8" />
+              <use href="#c-spark" transform="translate(368 44) scale(10)" opacity=".85" />
+              <use href="#c-spark" transform="translate(462 132) scale(5)" opacity=".6" />
+              <use href="#c-spark" transform="translate(40 250) scale(6)" opacity=".55" />
+              <circle cx="584" cy="170" r="1.6" opacity=".7" /><circle cx="440" cy="60" r="1.3" opacity=".6" />
+              <circle cx="24" cy="176" r="1.5" opacity=".5" /><circle cx="560" cy="300" r="1.4" opacity=".6" />
+            </g>
+          </svg>
+          <svg class="scene-layer" style="--d: 9" viewBox="0 0 600 560" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+            <defs>
+              <linearGradient id="c-bucket" x1="0" x2="1" y1="0" y2="1">
+                <stop offset="0" stop-color="#2cc3cc" />
+                <stop offset="1" stop-color="#0d6a78" />
+              </linearGradient>
+              <linearGradient id="c-bottle" x1="0" x2="1" y1="0" y2="1">
+                <stop offset="0" stop-color="#b8f58a" />
+                <stop offset=".5" stop-color="#3fdc9a" />
+                <stop offset="1" stop-color="#27c3cf" />
+              </linearGradient>
+              <linearGradient id="c-wood" x1="0" x2="1" y1="1" y2="0">
+                <stop offset="0" stop-color="#e8a24f" />
+                <stop offset="1" stop-color="#ffd98a" />
+              </linearGradient>
+            </defs>
+            <ellipse cx="300" cy="466" rx="300" ry="22" fill="#3fdc9a" opacity=".1" />
+            <g fill="#020706" opacity=".5">
+              <ellipse cx="170" cy="463" rx="112" ry="9" /><ellipse cx="405" cy="463" rx="78" ry="8" />
+              <ellipse cx="537" cy="463" rx="62" ry="7" /><ellipse cx="46" cy="463" rx="32" ry="6" />
+            </g>
+
+            <path d="M84 332C84 236 256 236 256 332" fill="none" stroke="#cfe9e0" stroke-width="5" />
+            <path d="M196 340 300 62" stroke="url(#c-wood)" stroke-width="12" stroke-linecap="round" />
+            <circle cx="300" cy="62" r="9" fill="#27c3cf" />
+            <g fill="none" stroke="#f5fffb" stroke-width="2.500" opacity=".85">
+              <circle cx="120" cy="262" r="7" /><circle cx="168" cy="250" r="5" /><circle cx="150" cy="226" r="4" />
+            </g>
+            <g fill="#f5fffb">
+              <circle cx="108" cy="316" r="20" /><circle cx="142" cy="300" r="27" /><circle cx="184" cy="298" r="30" />
+              <circle cx="222" cy="310" r="23" /><circle cx="244" cy="322" r="13" />
+            </g>
+            <g fill="#c8f5e6">
+              <circle cx="150" cy="312" r="13" /><circle cx="196" cy="314" r="14" />
+            </g>
+            <path d="M86 332h168l-16 118a12 12 0 0 1-12 10H114a12 12 0 0 1-12-10z" fill="url(#c-bucket)" />
+            <path d="M108 346l10 96h14l-8-96z" fill="#fff" opacity=".22" />
+            <rect x="76" y="320" width="188" height="18" rx="9" fill="#f2fff9" />
+            <g fill="none" stroke-width="9" stroke-linecap="round">
+              <path d="M182 326c6 18-4 34 0 52" stroke="#dff7ee" />
+              <path d="M196 326c8 20 0 40 6 64" stroke="#f5fffb" />
+              <path d="M210 326c8 22 2 36 8 56" stroke="#dff7ee" />
+              <path d="M224 326c6 16 2 28 6 42" stroke="#f5fffb" />
+            </g>
+            <use href="#c-spark" transform="translate(146 402) scale(20)" fill="#e8fff3" opacity=".9" />
+
+            <rect x="18" y="428" width="56" height="32" rx="8" fill="#ffd566" />
+            <rect x="18" y="428" width="56" height="11" rx="5" fill="#3fdc9a" />
+            <g fill="#e0a93d">
+              <circle cx="32" cy="449" r="2.500" /><circle cx="46" cy="453" r="2" /><circle cx="60" cy="448" r="2.500" />
+            </g>
+
+            <path d="M350 266c0-16 10-24 22-28l10-6h46l10 6c12 4 22 12 22 28l6 172a22 22 0 0 1-22 22h-78a22 22 0 0 1-22-22z" fill="url(#c-bottle)" />
+            <path d="M362 272l-4 150h10l4-150z" fill="#fff" opacity=".35" />
+            <rect x="372" y="300" width="72" height="104" rx="12" fill="#f5fffb" />
+            <path d="M132 46a105 105 0 1 0 119 140A98 98 0 0 1 132 46z" transform="translate(375 304) scale(.22)" fill="url(#g-brand)" />
+            <text x="408" y="384" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="800" font-size="13" letter-spacing=".5" fill="#0a1a17">CLEAN</text>
+            <rect x="384" y="210" width="42" height="26" rx="5" fill="#d9f7ec" />
+            <path d="M332 170h92c14 0 24 10 24 24v18h-82l-16-12h-18c-10 0-16-6-16-15s6-15 16-15z" fill="#f5fffb" />
+            <rect x="304" y="177" width="16" height="16" rx="4" fill="#27c3cf" />
+            <path d="M368 212c-6 16-14 28-30 38-4 2-8-2-6-6 8-12 12-24 14-40z" fill="#b8f58a" />
+            <use href="#c-spark" transform="translate(474 246) scale(13)" fill="#fff" />
+
+            <g fill="#f5fffb">
+              <circle cx="290" cy="180" r="3.500" opacity=".9" /><circle cx="274" cy="168" r="3" opacity=".8" />
+              <circle cx="276" cy="198" r="3.500" opacity=".8" /><circle cx="254" cy="154" r="2.500" opacity=".7" />
+              <circle cx="250" cy="186" r="3" opacity=".65" /><circle cx="256" cy="214" r="2.500" opacity=".6" />
+              <circle cx="230" cy="144" r="2" opacity=".5" /><circle cx="226" cy="176" r="2.500" opacity=".5" />
+              <circle cx="232" cy="206" r="2" opacity=".45" />
+              <use href="#c-spark" transform="translate(206 160) scale(12)" />
+              <use href="#c-spark" transform="translate(198 212) scale(7)" opacity=".85" />
+              <use href="#c-spark" transform="translate(250 124) scale(6)" opacity=".8" />
+            </g>
+
+            <rect x="478" y="436" width="118" height="24" rx="12" fill="#27c3cf" />
+            <rect x="484" y="416" width="106" height="22" rx="11" fill="#b8f58a" />
+            <path d="M492 448h62M498 427h52" stroke="#fff" stroke-opacity=".4" stroke-width="3" stroke-linecap="round" />
+          </svg>
           <div class="bubbles" aria-hidden="true"></div>
           <div class="image-topline">
             <span>CU GRIJĂ PENTRU FIECARE DETALIU</span>
@@ -350,7 +375,7 @@
               <path id="badge-circle" d="M60 60m-45 0a45 45 0 1 1 90 0a45 45 0 1 1-90 0" fill="none" />
               <text><textPath href="#badge-circle" textLength="280" lengthAdjust="spacing">LEXYNS CLEAN ✦ SIBIU ✦ NONSTOP ✦</textPath></text>
             </svg>
-            <img src="assets/logo-mark.png" alt="" width="196" height="202" />
+            <img src="assets/logo-mark.webp" alt="" width="160" height="165" />
           </div>
           <span class="bubble-hint" aria-hidden="true">Atinge bulele ✦</span>
           <div class="image-caption">
@@ -366,14 +391,6 @@
       </section>
 
       <div class="marquee-wrap" aria-hidden="true">
-        <div class="marquee marquee-dark">
-          <div class="marquee-track">
-            <span>Curat ca în prima zi</span><b>✦</b><span>Sibiu</span><b>✦</b><span>Nonstop</span><b>✦</b><span>Atenție la detalii</span><b>✦</b><span>Un singur telefon</span><b>✦</b>
-            <span>Curat ca în prima zi</span><b>✦</b><span>Sibiu</span><b>✦</b><span>Nonstop</span><b>✦</b><span>Atenție la detalii</span><b>✦</b><span>Un singur telefon</span><b>✦</b>
-            <span>Curat ca în prima zi</span><b>✦</b><span>Sibiu</span><b>✦</b><span>Nonstop</span><b>✦</b><span>Atenție la detalii</span><b>✦</b><span>Un singur telefon</span><b>✦</b>
-            <span>Curat ca în prima zi</span><b>✦</b><span>Sibiu</span><b>✦</b><span>Nonstop</span><b>✦</b><span>Atenție la detalii</span><b>✦</b><span>Un singur telefon</span><b>✦</b>
-          </div>
-        </div>
         <div class="marquee marquee-light">
           <div class="marquee-track">
             <span>Curățenie generală</span><b>✦</b><span>După constructor</span><b>✦</b><span>Birouri & spații comerciale</span><b>✦</b><span>Canapele & saltele</span><b>✦</b><span>Geamuri & vitrine</span><b>✦</b><span>Curățenie la mutare</span><b>✦</b>
@@ -387,7 +404,7 @@
           <span>01 / DESPRE LEXYNS CLEAN</span>
           <span>CURAT. SIMPLU. DE ÎNCREDERE.</span>
         </div>
-        <div class="loader-grid">
+        <div class="intro-grid">
           <h2>
             Curățenie serioasă.<br />
             <span class="muted">Oameni de încredere.</span>
@@ -409,22 +426,22 @@
           </div>
         </div>
         <div class="stats">
-          <div class="stat" data-tilt data-spotlight>
+          <div class="stat" data-tilt>
             <strong><span data-count="5" data-decimals="1">5,0</span><svg class="icon" aria-hidden="true"><use href="#i-star" /></svg></strong>
             <span>Rating pe Google</span>
           </div>
-          <div class="stat" data-tilt data-spotlight>
+          <div class="stat" data-tilt>
             <strong><span data-count="24">24</span>/7</strong>
             <span>Program nonstop, inclusiv în weekend</span>
           </div>
-          <div class="stat" data-tilt data-spotlight>
+          <div class="stat" data-tilt>
             <strong><span data-count="1">1</span> apel</strong>
             <span>E tot ce ai de făcut. Restul e treaba noastră.</span>
           </div>
         </div>
       </section>
 
-      <section class="services section-wrap" id="servicii" data-spotlight>
+      <section class="services section-wrap" id="servicii">
         <div class="section-label">
           <span>02 / SERVICII</span>
           <span>TOT CE ȚINE DE CURAT, ÎNTR-UN SINGUR LOC</span>
@@ -435,7 +452,7 @@
             <em>Pentru fiecare nevoie.</em>
           </h2>
           <p>
-            De la curățenia de weekend la cea după renovare,<br />găsim împreună
+            De la curățenia de weekend la cea după renovare, <br />găsim împreună
             soluția potrivită.
           </p>
         </div>
@@ -765,7 +782,7 @@
             Simplu, de la<br />
             <em>primul telefon.</em>
           </h2>
-          <p>Fără formulare lungi.<br />Fără așteptare.</p>
+          <p>Fără formulare lungi. <br />Fără așteptare.</p>
         </div>
         <ol class="steps" id="steps">
           <li class="step">
@@ -837,11 +854,11 @@
                 target="_blank"
                 rel="noopener"
                 ><span class="button-icon" aria-hidden="true"><svg class="icon"><use href="#i-star" /></svg></span>
-                Vezi-ne pe Google</a
+                Vizitează-ne pe Google</a
               >
             </div>
           </div>
-          <div class="visit-card" data-spotlight>
+          <div class="visit-card">
             <div>
               <span class="eyebrow">NE GĂSEȘTI ÎN</span>
               <h3>Str. Andrei Șaguna<br />Sibiu</h3>
@@ -886,10 +903,10 @@
         </div>
       </section>
     </main>
-    <footer data-spotlight>
+    <footer>
       <div class="footer-top">
         <a href="#" class="footer-logo" aria-label="Lexyns CLEAN, înapoi sus">
-          <img src="assets/logo.png" alt="" width="452" height="352" loading="lazy" />
+          <img src="assets/logo.webp" alt="" width="452" height="352" loading="lazy" decoding="async" />
         </a>
         <p>Curat ca în prima zi.</p>
         <div class="footer-links">
@@ -912,7 +929,7 @@
           <a href="#main" class="text-link">Înapoi sus ↑</a>
         </div>
       </div>
-      <div class="footer-word" aria-hidden="true" data-spotlight>lexyns<span>clean</span></div>
+      <div class="footer-word" aria-hidden="true">lexyns<span>clean</span></div>
       <div class="footer-bottom">
         <span>© <span id="year">2026</span> Lexyns CLEAN · Servicii de curățenie</span>
         <a href="tel:+40754679238">0754 679 238</a>
