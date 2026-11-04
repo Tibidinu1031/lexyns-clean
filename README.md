@@ -9,6 +9,8 @@ Site static, responsive, în limba română. **`index.html` din rădăcina proie
 3. Alege **Deploy from a branch**, selectează branch-ul (de obicei `main`), folderul **`/ (root)`** și salvează.
 4. Deschide adresa afișată de GitHub după publicare.
 
+La fiecare publicare, mărește numărul `?v=` de la `fonts.css`, `styles.css` și `app.js` din `index.html`. GitHub Pages lasă browserele să păstreze fișierele 10 minute, iar fără număr nou o pagină nouă se poate încărca cu stiluri vechi.
+
 Toate căile sunt relative, deci funcționează atât pe `username.github.io`, cât și pe `username.github.io/repository-name/`.
 
 ## Previzualizare și editare
