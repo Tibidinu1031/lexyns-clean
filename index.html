@@ -24,8 +24,8 @@
     <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
     <link rel="preload" as="font" type="font/woff2" href="assets/manrope-800.woff2" crossorigin />
     <link rel="preload" as="font" type="font/woff2" href="assets/dm-sans-400.woff2" crossorigin />
-    <link rel="stylesheet" href="fonts.css?v=4" />
-    <link rel="stylesheet" href="styles.css?v=4" />
+    <link rel="stylesheet" href="fonts.css?v=5" />
+    <link rel="stylesheet" href="styles.css?v=5" />
     <script>
       // Decide before first paint: skip the loader on repeat visits, honour the light mode.
       (function () {
@@ -45,7 +45,7 @@
         }, 4000);
       })();
     </script>
-    <script src="app.js?v=4" defer></script>
+    <script src="app.js?v=5" defer></script>
   </head>
   <body>
     <div class="loader" id="loader" aria-hidden="true">
@@ -156,6 +156,9 @@
       <symbol id="s-door" viewBox="0 0 32 32">
         <path d="M8 28V5h16v23M4 28h24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
         <circle cx="20" cy="17" r="1.4" fill="currentColor" />
+      </symbol>
+      <symbol id="s-stairs" viewBox="0 0 32 32">
+        <path d="M3 28h6v-5h5v-5h5v-5h5v-5h5M6 28V18L20 4v9M13 23V11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
       </symbol>
     </svg>
 
@@ -591,7 +594,7 @@
               id="rooms-position"
               aria-live="polite"
               aria-atomic="true"
-              >01 — 03 / 06</span
+              >01 — 03 / 08</span
             >
             <button class="round-link" id="rooms-prev" aria-label="Camerele anterioare">
               <svg class="icon" aria-hidden="true"><use href="#i-left" /></svg>
@@ -651,7 +654,7 @@
           </article>
           <article class="room" data-tilt>
             <div class="room-visual"><span>05</span><svg aria-hidden="true"><use href="#s-desk" /></svg></div>
-            <h3>Birou</h3>
+            <h3>Birou & spațiu comercial</h3>
             <ul>
               <li>Birouri și echipamente</li>
               <li>Coșuri de gunoi golite</li>
@@ -667,6 +670,26 @@
               <li>Dulapuri și cuiere, la exterior</li>
               <li>Oglinzi și întrerupătoare</li>
               <li>Pardoseală spălată</li>
+            </ul>
+          </article>
+          <article class="room" data-tilt>
+            <div class="room-visual"><span>07</span><svg aria-hidden="true"><use href="#s-stairs" /></svg></div>
+            <h3>Scară de bloc</h3>
+            <ul>
+              <li>Balustrade și pervazuri</li>
+              <li>Cutii poștale și interfon</li>
+              <li>Uși, geamuri și lift</li>
+              <li>Trepte și paliere spălate</li>
+            </ul>
+          </article>
+          <article class="room" data-tilt>
+            <div class="room-visual"><span>08</span><svg aria-hidden="true"><use href="#s-home" /></svg></div>
+            <h3>Curățenie generală & curățenie de întreținere</h3>
+            <ul>
+              <li>Toată locuința, cameră cu cameră</li>
+              <li>Praf, aspirat și pardoseli spălate</li>
+              <li>Bucătărie și băi igienizate</li>
+              <li>Întreținere săptămânală sau lunară</li>
             </ul>
           </article>
         </div>
@@ -881,7 +904,7 @@
               </div>
               <div>
                 <span>Acum</span>
-                <strong class="open-now"><i class="live-dot" aria-hidden="true"></i> Deschis</strong>
+                <strong class="open-now"><i class="live-dot" aria-hidden="true"></i> Deschis nonstop</strong>
               </div>
             </div>
             <a
@@ -973,7 +996,7 @@
           <div class="chips">
             <label><input type="radio" name="service" value="Curățenie generală" checked /><span>Generală</span></label>
             <label><input type="radio" name="service" value="Curățenie după constructor" /><span>După constructor</span></label>
-            <label><input type="radio" name="service" value="Birouri & spații comerciale" /><span>Birou</span></label>
+            <label><input type="radio" name="service" value="Birouri & spații comerciale" /><span>Birou & spațiu comercial</span></label>
             <label><input type="radio" name="service" value="Canapele, saltele & covoare" /><span>Canapele & saltele</span></label>
             <label><input type="radio" name="service" value="Geamuri & vitrine" /><span>Geamuri</span></label>
             <label><input type="radio" name="service" value="Curățenie la mutare" /><span>La mutare</span></label>
